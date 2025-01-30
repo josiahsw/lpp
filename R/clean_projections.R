@@ -1,4 +1,4 @@
-#' Cleans batter and pitcher projections
+#' Clean batter and pitcher projections
 #' 
 #' Data preparation for further calculation occurs in this step, such as
 #' creating columns, selecting columns, dealing with weird values etc.
@@ -62,7 +62,7 @@ clean_projections <- function(bat, pit) {
       WHIP
     ) %>%
     dplyr::mutate(
-      xQS = dplyr::ifelse(is.na(QS), quality_starts(GS, ERA, IP), QS),
+      xQS = ifelse(is.na(QS), quality_starts(GS, ERA, IP), QS),
       ER9 = ER * 9, # needed for weighting ERA
       WH = BB + H, # needed for weighting WHIP
       SVHLD = SV + HLD,
