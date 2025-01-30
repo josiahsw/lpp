@@ -1,14 +1,14 @@
-#' Clean batter projections 
+#' Cleans batter and pitcher projections
 #' 
-#' Most of the preparation for further calculation occurs in this step, such as
+#' Data preparation for further calculation occurs in this step, such as
 #' creating columns, selecting columns, dealing with weird values etc.
 #'
-#' @param df A data frame of batter projections scraped from fangraphs.com
+#' @inheritParams lpp
 #'
-#' @return A data frame of cleaned batter projections
-#' @noRd
-clean_proj_bat <- function(df) {
-  df <- df %>%
+#' @returns A list of length 2 containing a data frame of cleaned batter and pitcher projections.
+#' @noRd 
+clean_projections <- function(bat, pit) {
+  bat <- bat %>%
     dplyr::select(
       fangraphs_id = playerid,
       player_name = PlayerName,
@@ -37,24 +37,11 @@ clean_proj_bat <- function(df) {
       drafted = FALSE # needed for calculating zscore
     )
   
-  return(df)
-}
-
-#' Clean pitcher projections
-#' 
-#' Most of the preparation for further calculation occurs in this step, such as
-#' creating columns, selecting columns, dealing with weird values etc.
-#'
-#' @param df A data frame of pitcher projections scraped from fangraphs.com
-#'
-#' @return A data frame of cleaned pitcher projections
-#' @noRd
-clean_proj_pit <- function(df) {
-  if (!"QS" %in% names(df)) {
-    df$QS <- as.double(NA)
+  if (!"QS" %in% names(pit)) {
+    pit$QS <- as.double(NA)
   }
   
-  df <- df %>%
+  pit <- pit %>%
     dplyr::select(
       fangraphs_id = playerid,
       player_name = PlayerName,
@@ -75,22 +62,23 @@ clean_proj_pit <- function(df) {
       WHIP
     ) %>%
     dplyr::mutate(
-      xQS = ifelse(is.na(QS), quality_starts(GS, ERA, IP), QS),
+      xQS = dplyr::ifelse(is.na(QS), quality_starts(GS, ERA, IP), QS),
       ER9 = ER * 9, # needed for weighting ERA
       WH = BB + H, # needed for weighting WHIP
       SVHLD = SV + HLD,
       pos = dplyr::if_else(GS > 3.5, "SP", "RP"),
       drafted = FALSE # needed for zscore
-      ) %>%
+    ) %>%
     dplyr::select(-QS) %>%
     dplyr::rename(QS = xQS) %>%
     dplyr::mutate(
       WQS = W + QS
-    )
+    ) 
   
-  return(df)
+  results <- list(bat = bat, pit = pit)
+  return(results)
 }
-  
+
 # helpers -----------------------------------------------------------------
 
 #' Multi-position adjustment. Position priority is hard-coded into the function
@@ -102,7 +90,7 @@ clean_proj_pit <- function(df) {
 #' @param minpos A string, the minpos field from fangraphs.com batter 
 #'          projections which can include several positions separated by a '/'.
 #'
-#' @return A string, the most valuable of the listed positions for each player
+#' @return A string, the most valuable of the listed positions for each player.
 #' @noRd
 multi_pos_adj <- function(minpos) {
   position_priority = c(
