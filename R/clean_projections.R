@@ -33,8 +33,8 @@ clean_projections <- function(bat, pit) {
     dplyr::filter(minpos != "P") %>%
     dplyr::mutate(
       OB = H + BB + HBP, # needed for weighting OBP
-      pos = multi_pos_adj(minpos),
-      drafted = FALSE # needed for calculating zscore
+      pos = purrr::map_chr(minpos, find_priority_pos),
+      drafted = FALSE # needed for calculating z-score
     )
   
   if (!"QS" %in% names(pit)) {
@@ -67,7 +67,7 @@ clean_projections <- function(bat, pit) {
       WH = BB + H, # needed for weighting WHIP
       SVHLD = SV + HLD,
       pos = dplyr::if_else(GS > 3.5, "SP", "RP"),
-      drafted = FALSE # needed for zscore
+      drafted = FALSE # needed for z-score
     ) %>%
     dplyr::select(-QS) %>%
     dplyr::rename(QS = xQS) %>%
@@ -80,19 +80,18 @@ clean_projections <- function(bat, pit) {
 }
 
 # helpers -----------------------------------------------------------------
-
-#' Multi-position adjustment. Position priority is hard-coded into the function
-#' because I rarely need to change it, but the ability to change position
-#' priority could be added as an input to the UI in the future. I needed to 
-#' re-write as a loop so the function
-#' could handle vectorized operations in dplyr::mutate() gracefully.
+#' Find the priority position if multiple positions are listed. 
 #'
-#' @param minpos A string, the minpos field from fangraphs.com batter 
+#' Position priority reference table is hard-coded into the function.
+#' The ability to change the position priority reference table could be added as 
+#' future enhancement if needed. 
+#'
+#' @param minpos A string. The minpos field from fangraphs.com batter 
 #'          projections which can include several positions separated by a '/'.
 #'
-#' @return A string, the most valuable of the listed positions for each player.
+#' @return A string. The priority position for each player.
 #' @noRd
-multi_pos_adj <- function(minpos) {
+find_priority_pos <- function(minpos) {
   position_priority = c(
     "C"  = 1, 
     "SS" = 2, 
@@ -102,14 +101,8 @@ multi_pos_adj <- function(minpos) {
     "1B" = 6, 
     "DH" = 7
   )
-  
-  priority_pos <- vector("character", length(minpos))
-  for (i in seq_along(minpos)) {
-    split_pos <- unlist(strsplit(minpos[i], "/"))
-    priority_pos[i] <- names(which.min(position_priority[split_pos]))
-  }
-  
-  return(priority_pos)
+  split_pos <- unlist(strsplit(minpos, "/"))
+  names(which.min(position_priority[split_pos]))
 }
 
 #' Calculate expected quality starts
