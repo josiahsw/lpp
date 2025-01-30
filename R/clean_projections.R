@@ -117,6 +117,5 @@ find_priority_pos <- function(minpos) {
 #' @noRd
 quality_starts <- function(GS, ERA, IP) {
   # update QS formula, see old files (((IP/GS) / 6.15) - (.11 * ((ER/IP)*9)) * GS) / IP
-  QS <- ifelse(GS != 0, GS * (.4650115 - (ERA * .0872381) + (IP/GS * .0746775)), 0)
-  return(QS)
+  ifelse(GS != 0, GS * (.4650115 - (ERA * .0872381) + (IP/GS * .0746775)), 0)
 }
