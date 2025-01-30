@@ -1,19 +1,18 @@
 test_that("cleaned projections include needed columns", {
-  bat <- clean_proj_bat(batter_projections)
-  pit <- clean_proj_pit(pitcher_projections)
+  results <- clean_projections(batter_projections, pitcher_projections)
   expect_true(all(
-    c("fangraphs_id", "player_name", "OB", "pos", "drafted") %in% colnames(bat))
+    c("fangraphs_id", "player_name", "OB", "pos", "drafted") %in% colnames(results$bat))
   )
   expect_true(all(
     c("fangraphs_id", "player_name", "ER9", "WH", "SVHLD", "WQS", "pos", 
-      "drafted") %in% colnames(pit))
+      "drafted") %in% colnames(results$pit))
   )
 })
 
 test_that("clean_proj_pit() creates a QS col if missing", {
   expect_false("QS" %in% colnames(pitcher_projections))
-  df <- clean_proj_pit(pitcher_projections)
-  expect_true("QS" %in% colnames(df))
+  results <- clean_projections(batter_projections, pitcher_projections)
+  expect_true("QS" %in% colnames(results$pit))
 })
 
 test_that("multi_pos_adj() returns single positions", {
@@ -58,5 +57,3 @@ test_that("quality_starts() can work with vectorized operations", {
     c(11.8561507, 18.0242508, 24.3013985)
     )
 })
-
-
