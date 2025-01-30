@@ -22,4 +22,5 @@ LazyData: true
 Imports: 
     dplyr,
     magrittr,
-    purrr
+    purrr,
+    utils
