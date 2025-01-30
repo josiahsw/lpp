@@ -124,15 +124,7 @@ multi_pos_adj <- function(minpos) {
 #' @return Numeric, the expected number of quality starts for an SP
 #' @noRd
 quality_starts <- function(GS, ERA, IP) {
-  # TODO update QS formula, see old files (((IP/GS) / 6.15) - (.11 * ((ER/IP)*9)) * GS) / IP
-  QS <- numeric(length(GS))
-  for (i in seq_along(GS)) {
-    if (GS[i] != 0) {
-      QS[i] <- GS[i] * (.4650115 - (ERA[i] * .0872381) + ((IP[i]/GS[i]) * .0746775))
-    } else {
-      QS[i] <- 0
-    }
-  }
-  
+  # update QS formula, see old files (((IP/GS) / 6.15) - (.11 * ((ER/IP)*9)) * GS) / IP
+  QS <- ifelse(GS != 0, GS * (.4650115 - (ERA * .0872381) + (IP/GS * .0746775)), 0)
   return(QS)
 }
