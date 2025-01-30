@@ -1,0 +1,26 @@
+#' Run Last Player Picked
+#'
+#' @param bat A data frame of batter projections.
+#' @param pit A data frame of pitcher projections.
+#' @param keepers A data frame of keepers and values. Defaults to NULL.
+#' @param lg League: "AL", "NL", or "MLB" (the default).
+#' @param teams An integer. The number of teams in the league. Defaults to 12.
+#' @param budget An integer. The starting auction budget of each team in the league. Defaults to 260.
+#' @param min_bid An integer. The minimum auction bid. Defaults to 1.
+#' @param bat_cat A character vector of league batting categories.
+#' @param pit_cat A character vector of league pitching categories.
+#' @param bat_pos A named integer vector. The number of batters drafted at each position per team.
+#' @param pit_pos A named integer vector. The number of pitchers drafted at each position per team.
+#' @param bench An integer. The number of bench players drafted by each team.
+#'
+#' @returns A list of length 2 containing a data frame of batter and pitcher auction values.
+#' @export
+lpp <- function(bat = df, pit = df, keepers = NULL, 
+                lg = "MLB", teams = 12, budget = 260, min_bid = 1, 
+                bat_cat = c("HR", "R", "RBI", "SB", "OBP"),
+                pit_cat = c("W+QS", "SV+HLD", "SO", "ERA", "WHIP"),
+                bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, "MI" = 1, "OF" = 5, "UT" = 1),
+                pit_pos = c("SP" = 6, "RP" = 3, "P" = 0), bench = 2 ) {
+  
+  clean_projections(bat, pit)
+}
