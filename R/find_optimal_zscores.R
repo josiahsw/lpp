@@ -1,41 +1,53 @@
 # add documentation
 # create test to make sure iterations are > 2
-# add link to lpp method documentation
 # what's the best name? find optimal z-scores? simulate draft? find optimal draft pool? z-scores
 
-find_optimal_zscores <- function(projections, draft_pool, categories, slots) {
+#' Iterate until optimal z-scores/draft pool is found.
+#' 
+#' Based on Last Player Picked methodology. (add link)
+#'
+#' @param cleaned_projections A list of length 2 containing the output of clean_projections()
+#' @inheritParams lpp
+#'
+#' @returns A list of length 2 containing a data frame of batter and pitcher z-scores.
+#' @noRd 
+find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) {
   stopifnot(
-    all(names(projections) %in% c("bat", "pit")), length(projections) == 2,
-    all(names(draft_pool) %in% c("bat", "pit")), length(draft_pool) == 2,
-    all(names(categories) %in% c("bat", "pit")), length(categories) == 2,
-    all(names(slots) %in% c("bat", "pit", "bench")), length(slots) == 3
+    all(names(cleaned_projections) %in% c("bat", "pit")), length(cleaned_projections) == 2
   )
+  
+  # calculated values
+  batters_drafted <- sum(bat_pos)
+  pitchers_drafted <- sum(pit_pos)
+  bat_slots <- bat_pos * teams
+  pit_slots <- pit_pos * teams
+  bench_slots <- c("bench" = bench * teams)
   
   # variables needed for while loop
   i <- 0
   prior_rank <- NULL
   current_rank <-
-    c(head(projections$bat$fangraphs_id, draft_pool$bat),
-      head(projections$pit$fangraphs_id, draft_pool$pit))
+    c(head(cleaned_projections$bat$fangraphs_id, batters_drafted,
+      head(projections$pit$fangraphs_id, pitchers_drafted)))
   max_iterations <- 25
-  bat <- projections$bat
-  pit <- projections$pit
+  bat <- cleaned_projections$bat
+  pit <- cleaned_projections$pit
   
   while (i < max_iterations && !identical(current_rank, prior_rank)) {
     prior_rank <- current_rank
     
     bat <- bat %>%
-      weight_rate_stats(draft_pool$bat, "bat") %>%
-      calc_zscores(lg$categories$bat, "bat") %>%
-      draft_starters(slots$bat, "bat")
+      weight_rate_stats(batters_drafted, "bat") %>%
+      calc_zscores(bat_cat, "bat") %>%
+      draft_starters(bat_slots, "bat")
     
     pit <- pit %>%
-      weight_rate_stats(draft_pool$pit, "pit") %>%
-      calc_zscores(lg$categories$pit, "pit") %>%
-      draft_starters(slots$pit, "pit")
+      weight_rate_stats(pitchers_drafted, "pit") %>%
+      calc_zscores(pit_cat, "pit") %>%
+      draft_starters(pit_slots, "pit")
     
     # draft bench players
-    bench <- top_avail_bench(bat, pit, slots$bench)
+    bench <- top_avail_bench(bat, pit, bench_slots)
     bat <- mark_drafted_players(bat, bench)
     pit <- mark_drafted_players(pit, bench)
     
@@ -50,8 +62,8 @@ find_optimal_zscores <- function(projections, draft_pool, categories, slots) {
   }
   
   # clean draft results
-  zbat <- paste0("z", lg$categories$bat)
-  zpit <- paste0("z", lg$categories$pit)
+  zbat <- paste0("z", bat_cat)
+  zpit <- paste0("z", pit_cat)
   
   bat <- bat %>%
     dplyr::select(
