@@ -114,8 +114,7 @@ multi_pos_adj <- function(minpos) {
 
 #' Calculate expected quality starts
 #' 
-#' A Cup of Fantasy Joe xQS formula. Needed to be re-write as a loop so the
-#' function could handle vectorized operations in dplyr::mutate() gracefully
+#' A Cup of Fantasy Joe xQS formula.
 #'
 #' @param GS Numeric, projected games started
 #' @param ERA Numeric, projected earned run average
