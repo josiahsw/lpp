@@ -33,8 +33,10 @@ test_that("find_priority_pos() returns the priority position", {
 })
 
 test_that("find_priority_pos() can work with vectorized operations", {
-  pos <- c("C/OF", "3B/SS/DH", "2B/3B", "3B/OF", "1B/OF", "DH/1B")
-  expect_equal(find_priority_pos(pos), c("C", "SS", "2B", "3B", "OF", "1B"))
+  minpos <- c("C/OF", "3B/SS/DH", "2B/3B", "3B/OF", "1B/OF", "DH/1B")
+  expected <- c("C", "SS", "2B", "3B", "OF", "1B")
+  result <- purrr::map_chr(minpos, find_priority_pos)
+  expect_equal(result, expected)
 })
 
 test_that("quality_starts() returns 0 and no error if GS == 0", {
