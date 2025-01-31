@@ -17,8 +17,6 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
   )
   
   # calculated values
-  batters_drafted <- sum(bat_pos)
-  pitchers_drafted <- sum(pit_pos)
   bat_slots <- bat_pos * teams
   pit_slots <- pit_pos * teams
   bench_slots <- c("bench" = bench * teams)
@@ -27,8 +25,8 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
   i <- 0
   prior_rank <- NULL
   current_rank <-
-    c(head(cleaned_projections$bat$fangraphs_id, batters_drafted,
-      head(projections$pit$fangraphs_id, pitchers_drafted)))
+    c(head(cleaned_projections$bat$fangraphs_id, sum(bat_pos),
+      head(projections$pit$fangraphs_id, sum(pit_pos))))
   max_iterations <- 25
   bat <- cleaned_projections$bat
   pit <- cleaned_projections$pit
@@ -37,12 +35,12 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     prior_rank <- current_rank
     
     bat <- bat %>%
-      weight_rate_stats(batters_drafted, "bat") %>%
+      weight_rate_stats(bat_pos, teams, "bat") %>%
       calc_zscores(bat_cat, "bat") %>%
       draft_starters(bat_slots, "bat")
     
     pit <- pit %>%
-      weight_rate_stats(pitchers_drafted, "pit") %>%
+      weight_rate_stats(pit_pos, teams, "pit") %>%
       calc_zscores(pit_cat, "pit") %>%
       draft_starters(pit_slots, "pit")
     

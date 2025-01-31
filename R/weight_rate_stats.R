@@ -6,18 +6,21 @@
 #' the iteration because the point of the iteration is to find the stable draft pool
 #' which is used to calculate the weighted stats.
 #'
-#' @param df A data frame of cleaned batter projections
-#' @param draft_pool An integer, the number of batters 
-#'    or pitchers drafted. Based on league configuration/calculated inputs.
+#' @param df A data frame of cleaned batter or pitcher projections.
+#' @param pos_vec A named integer vector, either bat_pos or pit_pos. 
+#' @inheritParams lpp
+#' @param stat Either "bat" for batter stats, or "pit" for pitching stats.
 #'
 #' @return A data frame with weighted rate stat variables
 #' @noRd
-weight_rate_stats <- function(df, draft_pool, stat) {
+weight_rate_stats <- function(df, pos_vec, teams, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
-  # adjusts for the first iteration where no players are marked as drafted yet
+  # adjusts for the first iteration where no players are marked as drafted yet.
+  # this will be adjusted for in later iterations.
   if (sum(df$drafted) == 0) {
-    df$drafted[1:draft_pool] <- TRUE
+    players_drafted <- sum(pos_vec) * teams
+    df$drafted[1:players_drafted] <- TRUE
   }
   
   dp_mean <- draftpool_summary(df, mean)
@@ -35,7 +38,6 @@ weight_rate_stats <- function(df, draft_pool, stat) {
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
       )
   }
-  
   return(df)
 }
 
