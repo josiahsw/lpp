@@ -5,8 +5,8 @@
 \title{Run Last Player Picked}
 \usage{
 lpp(
-  bat = df,
-  pit = df,
+  bat = NULL,
+  pit = NULL,
   keepers = NULL,
   lg = "MLB",
   teams = 12,
