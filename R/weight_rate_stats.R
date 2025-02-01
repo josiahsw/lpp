@@ -6,13 +6,14 @@
 #' the iteration because the point of the iteration is to find the stable draft pool
 #' which is used to calculate the weighted stats.
 #'
-#' @param df A data frame of cleaned batter or pitcher projections.
+#' @param cleaned_projection A data frame of cleaned batter or pitcher projections
+#'                           from clean_projections().
 #' @param n_drafted An integer, the number of batters or pitchers drafted. 
 #' @param stat Either "bat" for batter stats, or "pit" for pitching stats.
 #'
-#' @return A data frame with weighted rate stat variables
+#' @return The cleaned projection data frame with weighted rate stat variables added.
 #' @noRd
-weight_rate_stats <- function(df, n_drafted, stat) {
+weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
   # adjusts for the first iteration where no players are marked as drafted yet.
@@ -24,32 +25,31 @@ weight_rate_stats <- function(df, n_drafted, stat) {
   dp_mean <- draftpool_summary(df, mean)
   
   if (stat == "bat") {
-    df <- df %>%
+    result <- cleaned_projection %>%
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
         wOBP = x_above_avg(OB, PA, dp_mean["OBP"]) # converts to on-base above avg
       )
   } else {
-    df <- df %>%
+    result <- cleaned_projection %>%
       dplyr::mutate(
         wERA = -x_above_avg(ER9, IP, dp_mean["ERA"]), # runs prevented above avg
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
       )
   }
-  return(df)
+  return(result)
 }
 
 # helpers -----------------------------------------------------------------
-
 #' Calculate a summary statistic for a given population of drafted players
 #' 
 #' A helper function used to calculate the mean or SD of a given player
 #' pool. Used in weighting rate stats and calculating z-scores.
 #'
-#' @param df A data frame of pitcher or batter projections
-#' @param fun A function, mean or SD
+#' @param df A data frame of pitcher or batter projections.
+#' @param fun A function.
 #'
-#' @return A numeric vector, the summary stat of each numeric column in the df
+#' @return A numeric vector, the summary stat of each numeric column in the data frame.
 #' @noRd
 draftpool_summary <- function(df, fun) {
   stopifnot(any(df$drafted))
