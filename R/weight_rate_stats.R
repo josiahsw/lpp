@@ -7,20 +7,18 @@
 #' which is used to calculate the weighted stats.
 #'
 #' @param df A data frame of cleaned batter or pitcher projections.
-#' @param pos_vec A named integer vector, either bat_pos or pit_pos. 
-#' @inheritParams lpp
+#' @param n_drafted An integer, the number of batters or pitchers drafted. 
 #' @param stat Either "bat" for batter stats, or "pit" for pitching stats.
 #'
 #' @return A data frame with weighted rate stat variables
 #' @noRd
-weight_rate_stats <- function(df, pos_vec, teams, stat) {
+weight_rate_stats <- function(df, n_drafted, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
   # adjusts for the first iteration where no players are marked as drafted yet.
   # this will be adjusted for in later iterations.
   if (sum(df$drafted) == 0) {
-    players_drafted <- sum(pos_vec) * teams
-    df$drafted[1:players_drafted] <- TRUE
+    df$drafted[1:n_drafted] <- TRUE
   }
   
   dp_mean <- draftpool_summary(df, mean)
