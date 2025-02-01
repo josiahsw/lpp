@@ -18,11 +18,11 @@ weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   
   # adjusts for the first iteration where no players are marked as drafted yet.
   # this will be adjusted for in later iterations.
-  if (sum(df$drafted) == 0) {
-    df$drafted[1:n_drafted] <- TRUE
+  if (sum(cleaned_projection$drafted) == 0) {
+    cleaned_projection$drafted[1:n_drafted] <- TRUE
   }
   
-  dp_mean <- draftpool_summary(df, mean)
+  dp_mean <- draftpool_summary(cleaned_projection, mean)
   
   if (stat == "bat") {
     result <- cleaned_projection %>%
