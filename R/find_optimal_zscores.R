@@ -16,6 +16,11 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     )
   
   n_drafted <- allocate_bench_slots(bat_pos, pit_pos, bench, teams)
+  n_drafted_by_pos <- list(
+    bat = bat_pos * teams, 
+    pit = pit_pos * teams,
+    bench = c(bench = bench * teams)
+    )
   
   # variables needed for while loop
   i <- 0
@@ -33,15 +38,15 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     bat <- bat %>%
       weight_rate_stats(n_drafted$bat, "bat") %>%
       calc_zscores(bat_cat, "bat") %>%
-      draft_starters(bat_slots, "bat")
+      draft_starters(n_drafted_by_pos$bat, "bat")
     
     pit <- pit %>%
       weight_rate_stats(n_drafted$pit, "pit") %>%
       calc_zscores(pit_cat, "pit") %>%
-      draft_starters(pit_slots, "pit")
+      draft_starters(n_drafted_by_pos$pit, "pit")
     
     # draft bench players
-    bench <- top_avail_bench(bat, pit, bench_slots)
+    bench <- top_avail_bench(bat, pit, n_drafted_by_pos$bench)
     bat <- mark_drafted_players(bat, bench)
     pit <- mark_drafted_players(pit, bench)
     
