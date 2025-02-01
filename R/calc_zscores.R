@@ -25,7 +25,7 @@ calc_zscores <- function(df, categories, stat) {
   selected_cols <- paste0("z", categories)
   
   dp_mean <- draftpool_summary(df, mean) # see weight_rate_stats.R for function documentation
-  dp_sd <- draftpool_summary(df, sd)
+  dp_sd <- draftpool_summary(df, stats::sd)
   
   if (stat == "bat") {
     df <- df %>%
@@ -73,3 +73,6 @@ calc_zscores <- function(df, categories, stat) {
 z_score <- function(raw_score, pop_mean, pop_sd) {
   (raw_score - pop_mean) / pop_sd
 }
+
+# dplyr unquoted variable names to eliminate notes when running R CMD check
+utils::globalVariables(c("wAVG", "wOBP", "wQS", "SVHLD", "wERA", "wWHIP"))
