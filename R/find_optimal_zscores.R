@@ -1,20 +1,19 @@
-# add documentation
-# create test to make sure iterations are > 2
-# what's the best name? find optimal z-scores? simulate draft? find optimal draft pool? z-scores
-
-#' Iterate until optimal z-scores/draft pool is found.
+#' Iterate until optimal z-scores are found.
 #' 
 #' Based on Last Player Picked methodology. (add link)
 #'
-#' @param cleaned_projections A list of length 2 containing the output of clean_projections()
+#' @param cleaned_projections A list of length 2 containing the output of 
+#'                            clean_projections()
 #' @inheritParams lpp
 #'
-#' @returns A list of length 2 containing a data frame of batter and pitcher z-scores.
+#' @returns A list of length 2 containing a data frame of batter and pitcher 
+#'          z-scores.
 #' @noRd 
 find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) {
   stopifnot(
-    all(names(cleaned_projections) %in% c("bat", "pit")), length(cleaned_projections) == 2
-  )
+    all(names(cleaned_projections) %in% c("bat", "pit")), 
+    length(cleaned_projections) == 2
+    )
   
   n_drafted <- allocate_bench_slots(bat_pos, pit_pos, bench, teams)
   
@@ -91,14 +90,11 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
       desc(zSUM)
     )
   
-  results <- list(
-    bat = bat,
-    pit = pit
-  )
-  
+  results <- list(bat = bat, pit = pit)
   return(results)
 }
 
+# helpers -----------------------------------------------------------------
 #' Allocate bench slots between batters and pitchers.
 #' 
 #' Assumes the number of bench batters and pitchers are equal. If the number is 
