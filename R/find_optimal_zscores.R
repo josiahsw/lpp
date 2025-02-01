@@ -16,17 +16,14 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     all(names(cleaned_projections) %in% c("bat", "pit")), length(cleaned_projections) == 2
   )
   
-  # calculated values
-  bat_slots <- bat_pos * teams
-  pit_slots <- pit_pos * teams
-  bench_slots <- c("bench" = bench * teams)
+  n_drafted <- allocate_bench_slots(bat_pos, pit_pos, bench, teams)
   
   # variables needed for while loop
   i <- 0
   prior_rank <- NULL
   current_rank <-
-    c(head(cleaned_projections$bat$fangraphs_id, sum(bat_pos),
-      head(projections$pit$fangraphs_id, sum(pit_pos))))
+    c(head(cleaned_projections$bat$fangraphs_id, n_drafted$bat,
+      head(projections$pit$fangraphs_id, n_drafted$pit)))
   max_iterations <- 25
   bat <- cleaned_projections$bat
   pit <- cleaned_projections$pit
@@ -99,5 +96,33 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     pit = pit
   )
   
+  return(results)
+}
+
+#' Allocate bench slots between batters and pitchers.
+#' 
+#' Assumes the number of bench batters and pitchers are equal. If the number is 
+#' odd the remainder is distributed to batters. Used for initial iterations 
+#' and z-scores.
+#'
+#' @inheritParams lpp 
+#'
+#' @returns A list of length 2, the number of batters and pitchers drafted based
+#'          on league settings.
+#' @noRd
+allocate_bench_slots <- function(bat_pos, pit_pos, bench, teams) {
+  n_bench_drafted <- bench * teams
+  
+  if (n_bench_drafted == 0) {
+    b <- sum(bat_pos) * teams
+    p <- sum(pit_pos) * teams
+  } else if (n_bench_drafted %% 2 != 0) {
+    b <- sum(bat_pos) * teams + n_bench_drafted %/% 2 + 1
+    p <- sum(pit_pos) * teams + n_bench_drafted %/% 2
+  } else if (n_bench_drafted %% 2 == 0) {
+    b <- sum(bat_pos) * teams + n_bench_drafted / 2
+    p <- sum(pit_pos) * teams + n_bench_drafted / 2
+  }
+  results <- list(bat = b, pit = p)
   return(results)
 }
