@@ -31,12 +31,12 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     prior_rank <- current_rank
     
     bat <- bat %>%
-      weight_rate_stats(n_drafted, "bat") %>%
+      weight_rate_stats(n_drafted$bat, "bat") %>%
       calc_zscores(bat_cat, "bat") %>%
       draft_starters(bat_slots, "bat")
     
     pit <- pit %>%
-      weight_rate_stats(n_drafted, "pit") %>%
+      weight_rate_stats(n_drafted$pit, "pit") %>%
       calc_zscores(pit_cat, "pit") %>%
       draft_starters(pit_slots, "pit")
     
