@@ -1,8 +1,9 @@
 #' Weight rate stats by playing time
 #' 
 #' Weights rate stats for batters and pitchers by playing time, so players with 
-#' higher playing time are rewarded for having above average rate stats. See 
-#' helper function documentation for more detail.
+#' higher playing time are rewarded for having above average rate stats. 
+#' Closely follows the method outlined in this article:
+#' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/.
 #'
 #' @param cleaned_projection A data frame of cleaned batter or pitcher projections
 #'                           from clean_projections().
@@ -60,21 +61,17 @@ draftpool_summary <- function(df, fun) {
 
 #' x above average
 #' 
-#' A helper function that converts a rate stat to a counting stat based on the
-#' LPP method. Can be interpreted as returning a counting stat above what the 
-#' average player would produce given the same amount of playing time.
+#' converts a rate stat to a counting stat based on the LPP method. Can be 
+#' interpreted as returning a counting stat above what the average player would 
+#' produce given the same amount of playing time.
 #'
 #' For example, since AVG measures H/AB, wAVG becomes H above the average player 
 #' given the same amount of AB. If the average player would get 10 hits in 40 AB 
 #' (a .250 AVG), and player y gets 12 hits in 40 AB (a .300 AVG), player y would 
 #' have 2 hits above AVG. 
 #' 
-#' The wERA calculation deserves some explanation. The ERA 
-#' formula (ER * 9) / IP = ERA is re-written as (ER * 9) = IP * ERA so it can be 
-#' weighted using the same x_above_avg() formula as the the other stats.
-#' 
-#' See article for more detail:
-#' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/.
+#' The ERA formula (ER * 9) / IP = ERA is re-written as (ER * 9) = IP * ERA so 
+#' it can be weighted using the same x_above_avg() formula as the other stats.
 #'
 #' @param x Numeric, the stat being prorated in the rate statistic. For example,
 #'    H used in calculating AVG.

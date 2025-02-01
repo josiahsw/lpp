@@ -1,34 +1,33 @@
 #' Calculate z-scores
 #' 
 #' Calculates z-scores for all categories that are available as
-#' initial options then calculates the z-score sum only for selected league-
-#' specific categories. The z-scores are then optimized by running the 
+#' initial options then calculates the z-score sum for selected league-
+#' specific categories. Closely follows the method outlined in this article:
+#' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/. 
+#' 
+#' The z-scores are then optimized by running the 
 #' calculation multiple times until the ranking of draft-able players from the 
 #' last iteration is the same as the previous iteration - indicating that a 
 #' stable z-score has been achieved or a maximum number of iterations has
-#' been reached. This closely follows the method outlined in this article:
-#' https://web.archive.org/web/20120725010258/http://www.lastplayerpicked.com/how-the-price-guide-works-part-iv-iterations/ 
-#' and also in the comments to Part 1 of the series. I deviate from the article 
-#' by iterating at the z-score step without first applying the positional
-#' adjustment and calculating player values, since both of those steps
+#' been reached. 
 #'
-#' @param df 
-#' @param categories a vector of batter or pitcher stat categories, from league
-#'    settings
-#' @param stat "bat" or "pit"
+#' @param weighted_projection  A data frame of weighted batter or pitcher 
+#'                             projections from weight_rate_stats().
+#' @param categories A vector of batter or pitcher categories. Either 
+#'                   "bat_cat" or "pit_cat".
+#' @param stat "bat" for batting projections, or "pit" for pitching projections.
 #'
-#' @return A data frame with calculated z-scores, sorted by zSUM of selected
-#'    league categories
+#' @return The weighted projections data frame with z-score variables added.
 #' @noRd
-calc_zscores <- function(df, categories, stat) {
+calc_zscores <- function(weighted_projection, categories, stat) {
   stat <- match.arg(stat, c("bat", "pit"))
   selected_cols <- paste0("z", categories)
   
-  dp_mean <- draftpool_summary(df, mean) # see weight_rate_stats.R for function documentation
-  dp_sd <- draftpool_summary(df, stats::sd)
+  dp_mean <- draftpool_summary(weighted_projection, mean)
+  dp_sd <- draftpool_summary(weighted_projection, stats::sd)
   
   if (stat == "bat") {
-    df <- df %>%
+    df <- weighted_projection %>%
       dplyr::mutate(
         zHR = z_score(HR, dp_mean["HR"], dp_sd["HR"]),
         zR = z_score(R, dp_mean["R"], dp_sd["R"]),
@@ -38,7 +37,7 @@ calc_zscores <- function(df, categories, stat) {
         zOBP = z_score(wOBP, dp_mean["wOBP"], dp_sd["wOBP"])
       )
   } else {
-    df <- df %>%
+    df <- weighted_projection %>%
       dplyr::mutate(
         zW = z_score(W, dp_mean["W"], dp_sd["W"]),
         zQS = z_score(QS, dp_mean["QS"], dp_sd["QS"]),
@@ -58,11 +57,7 @@ calc_zscores <- function(df, categories, stat) {
 }
 
 # helpers -----------------------------------------------------------------
-
 #' Calculate z-score
-#' 
-#' See article for detail:
-#' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/
 #'
 #' @param raw_score Numeric
 #' @param pop_mean Numeric
