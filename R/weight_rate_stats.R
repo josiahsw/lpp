@@ -2,9 +2,7 @@
 #' 
 #' Weights rate stats for batters and pitchers by playing time, so players with 
 #' higher playing time are rewarded for having above average rate stats. See 
-#' helper function documentation for more detail. This needs to be included in 
-#' the iteration because the point of the iteration is to find the stable draft pool
-#' which is used to calculate the weighted stats.
+#' helper function documentation for more detail.
 #'
 #' @param cleaned_projection A data frame of cleaned batter or pitcher projections
 #'                           from clean_projections().
@@ -16,7 +14,7 @@
 weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
-  # adjusts for the first iteration where no players are marked as drafted yet.
+  # for the first iteration where no players are marked as drafted yet.
   # this will be adjusted for in later iterations.
   if (sum(cleaned_projection$drafted) == 0) {
     cleaned_projection$drafted[1:n_drafted] <- TRUE
