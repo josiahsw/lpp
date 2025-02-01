@@ -21,8 +21,8 @@
 #' @noRd
 calc_zscores <- function(weighted_projection, categories, stat) {
   stat <- match.arg(stat, c("bat", "pit"))
-  selected_cols <- paste0("z", categories)
   
+  selected_cols <- paste0("z", categories)
   dp_mean <- draftpool_summary(weighted_projection, mean)
   dp_sd <- draftpool_summary(weighted_projection, stats::sd)
   
@@ -51,7 +51,10 @@ calc_zscores <- function(weighted_projection, categories, stat) {
       )
   }
     # sum z-scores for selected categories
-    df$zSUM <- rowSums(as.matrix(df[selected_cols]))
+  df <- df %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(zSUM = sum(dplyr::across(dplyr::all_of(selected_cols)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
     
     return(df)
 }
