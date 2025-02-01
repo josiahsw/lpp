@@ -49,3 +49,12 @@ test_that("draftpool_summary() works for mean and sd", {
   expect_equal(dp_mean, test_mean)
   expect_equal(dp_sd, test_sd)
 })
+
+test_that("x_above_avg() works", {
+  x <- 12
+  pt <- 40
+  dp_mean <- .25
+  
+  result <- x_above_avg(x, pt, dp_mean)
+  expect_equal(result, 2)
+})
