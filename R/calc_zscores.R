@@ -4,12 +4,6 @@
 #' initial options then calculates the z-score sum for selected league-
 #' specific categories. Closely follows the method outlined in this article:
 #' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/. 
-#' 
-#' The z-scores are then optimized by running the 
-#' calculation multiple times until the ranking of draft-able players from the 
-#' last iteration is the same as the previous iteration - indicating that a 
-#' stable z-score has been achieved or a maximum number of iterations has
-#' been reached. 
 #'
 #' @param weighted_projection  A data frame of weighted batter or pitcher 
 #'                             projections from weight_rate_stats().
