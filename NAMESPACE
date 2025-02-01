@@ -3,3 +3,4 @@
 export("%>%")
 export(lpp)
 importFrom(magrittr,"%>%")
+importFrom(utils,head)

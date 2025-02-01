@@ -8,6 +8,7 @@
 #'
 #' @returns A list of length 2 containing a data frame of batter and pitcher 
 #'          z-scores.
+#' @importFrom utils head
 #' @noRd 
 find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) {
   stopifnot(
