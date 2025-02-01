@@ -63,13 +63,13 @@ draftpool_summary <- function(df, fun) {
 #' A helper function that converts a rate stat to a counting stat based on the
 #' LPP method. Can be interpreted as returning a counting stat above what the 
 #' average player would produce given the same amount of playing time.
+#'
 #' For example, since AVG measures H/AB, wAVG becomes H above the average player 
 #' given the same amount of AB. If the average player would get 10 hits in 40 AB 
 #' (a .250 AVG), and player y gets 12 hits in 40 AB (a .300 AVG), player y would 
 #' have 2 hits above AVG. 
 #' 
-#' For pitching rate stats the results are negated so lower wERA and wWHIP lead 
-#' to higher values. The wERA calculation deserves some explanation. The ERA 
+#' The wERA calculation deserves some explanation. The ERA 
 #' formula (ER * 9) / IP = ERA is re-written as (ER * 9) = IP * ERA so it can be 
 #' weighted using the same x_above_avg() formula as the the other stats.
 #' 
@@ -84,7 +84,7 @@ draftpool_summary <- function(df, fun) {
 #'    the mean batting average (AVG) of the player pool that was drafted based 
 #'    on league configurations.
 #'
-#' @return Numeric, the stat x above/below the mean player
+#' @return Numeric, the stat x above/below the mean player.
 #' @noRd
 x_above_avg <- function(x, pt, dp_mean) {
   x - (pt * dp_mean)
