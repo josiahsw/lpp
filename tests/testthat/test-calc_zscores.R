@@ -16,3 +16,11 @@ test_that("calc_zscores() returns accurate zSUM", {
   expect_true("zSUM" %in% colnames(df))
   expect_equal(df$zSUM, df1$zSUM1)
 })
+
+test_that("z_score() works", {
+  raw_score <- 5
+  pop_mean <- 3
+  pop_sd <- 2
+  result <- z_score(raw_score, pop_mean, pop_sd)
+  expect_equal(result, 1)
+})
