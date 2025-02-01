@@ -1,9 +1,15 @@
-#' Example batter and pitcher projections
+#' Example batter projections
 #' 
-#' ATC ROS projections were scraped using gardy::fg_batter_projections() and
-#' gardy::fg_pitcher_projections(). They are good representations of the raw 
-#' data that will be imported for use in the package. Included here for package 
-#' development and testing so the new projections do not need to be scraped each 
-#' session. 
+#' ATC ROS projections scraped from fangraphs.com in roughly mid-2024.
+#' It is a good representation of the raw batter projection data on which the 
+#' package will be used. Included here for development and testing so new 
+#' projections do not need to be imported each session. 
 "batter_projections"
+
+#' Example pitcher projections
+#' 
+#' ATC ROS projections scraped from fangraphs.com in roughly mid-2024.
+#' It is a good representation of the raw pitcher projection data on which the 
+#' package will be used. Included here for development and testing so new 
+#' projections do not need to be imported each session.  
 "pitcher_projections"
