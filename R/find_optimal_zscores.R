@@ -15,6 +15,8 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     length(cleaned_projections) == 2
     )
   
+  bat <- cleaned_projections$bat
+  pit <- cleaned_projections$pit
   n_drafted <- allocate_bench_slots(bat_pos, pit_pos, bench, teams)
   n_drafted_by_pos <- list(
     bat = bat_pos * teams, 
@@ -29,8 +31,6 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
     c(head(cleaned_projections$bat$fangraphs_id, n_drafted$bat,
       head(projections$pit$fangraphs_id, n_drafted$pit)))
   max_iterations <- 25
-  bat <- cleaned_projections$bat
-  pit <- cleaned_projections$pit
   
   while (i < max_iterations && !identical(current_rank, prior_rank)) {
     prior_rank <- current_rank
