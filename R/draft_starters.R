@@ -147,7 +147,7 @@ combined_rankings <- function(bat, pit) {
     dplyr::select(fangraphs_id, zSUM)
   
   all <- dplyr::bind_rows(b, p) %>%
-    dplyr::arrange(desc(zSUM))
+    dplyr::arrange(dplyr::desc(zSUM))
   
   ranks <- all$fangraphs_id
   return(ranks)

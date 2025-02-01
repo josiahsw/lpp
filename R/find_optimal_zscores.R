@@ -30,7 +30,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
   prior_rank <- NULL
   current_rank <-
     c(utils::head(cleaned_projections$bat$fangraphs_id, n_drafted$bat,
-      utils::head(projections$pit$fangraphs_id, n_drafted$pit)))
+      utils::head(cleaned_projections$pit$fangraphs_id, n_drafted$pit)))
   max_iterations <- 25
   
   while (i < max_iterations && !identical(current_rank, prior_rank)) {
@@ -78,7 +78,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
       drafted
     ) %>%
     dplyr::arrange(
-      desc(zSUM)
+      dplyr::desc(zSUM)
     )
   
   pit <- pit %>%
@@ -93,7 +93,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench, t
       drafted
     ) %>%
     dplyr::arrange(
-      desc(zSUM)
+      dplyr::desc(zSUM)
     )
   
   results <- list(bat = bat, pit = pit)
@@ -128,3 +128,7 @@ allocate_bench_slots <- function(bat_pos, pit_pos, bench, teams) {
   results <- list(bat = b, pit = p)
   return(results)
 }
+
+# dplyr unquoted variable names to eliminate notes when running R CMD check
+utils::globalVariables(c("fangraphs_id", "player_name", "pos", "zSUM", 
+                         "drafted"))
