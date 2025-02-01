@@ -1,18 +1,18 @@
-test_that("calc_zscores() returns zSUM", {
-  df <- data.frame(
-    "HR" = sample(0:40, 100, replace = TRUE),
-    "R" = sample(20:120, 100, replace = TRUE),
-    "RBI" = sample(20:120, 100, replace = TRUE),
-    "SB" = sample(0:50, 100, replace = TRUE),
-    "wAVG" = rnorm(100, mean = .250, sd = .25),
-    "wOBP" = rnorm(100, mean = .320, sd = .3),
-    "drafted" = TRUE
-  )
-  
-  # random selection of 5 categories for test
+test_that("calc_zscores() returns accurate zSUM", {
   categories <- c("HR", "R", "RBI", "SB", "AVG", "OBP")
-  selected_categories <- sample(categories, 5, replace = FALSE)
-  df <- calc_zscores(df, selected_categories, "bat")
+  bat_cat <- sample(categories, 5, replace = FALSE) # random selection for test
+  z_cols <- paste0("z", bat_cat)
+  results <- clean_projections(batter_projections, pitcher_projections)
+  n_drafted <- 100
+  
+  df <- weight_rate_stats(results$bat, n_drafted, "bat") %>%
+    calc_zscores(bat_cat, "bat")
+  
+  df1 <- df %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(zSUM1 = sum(dplyr::across(dplyr::all_of(z_cols)), na.rm = TRUE)) %>%
+    dplyr::ungroup()
   
   expect_true("zSUM" %in% colnames(df))
+  expect_equal(df$zSUM, df1$zSUM1)
 })
