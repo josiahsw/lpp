@@ -75,4 +75,4 @@ z_score <- function(raw_score, pop_mean, pop_sd) {
 }
 
 # dplyr unquoted variable names to eliminate notes when running R CMD check
-utils::globalVariables(c("wAVG", "wOBP", "wQS", "SVHLD", "wERA", "wWHIP"))
+utils::globalVariables(c("wAVG", "wOBP", "WQS", "SVHLD", "wERA", "wWHIP"))
