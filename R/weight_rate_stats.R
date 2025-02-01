@@ -91,3 +91,6 @@ draftpool_summary <- function(df, fun) {
 x_above_avg <- function(x, pt, dp_mean) {
   x - (pt * dp_mean)
 }
+
+# dplyr unquoted variable names to eliminate notes when running R CMD check
+utils::globalVariables(c("OB", "ER9", "WH"))
