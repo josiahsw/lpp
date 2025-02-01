@@ -24,19 +24,19 @@ weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   dp_mean <- draftpool_summary(cleaned_projection, mean)
   
   if (stat == "bat") {
-    result <- cleaned_projection %>%
+    weighted_projection <- cleaned_projection %>%
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
         wOBP = x_above_avg(OB, PA, dp_mean["OBP"]) # converts to on-base above avg
       )
   } else {
-    result <- cleaned_projection %>%
+    weighted_projection <- cleaned_projection %>%
       dplyr::mutate(
         wERA = -x_above_avg(ER9, IP, dp_mean["ERA"]), # runs prevented above avg
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
       )
   }
-  return(result)
+  return(weighted_projection)
 }
 
 # helpers -----------------------------------------------------------------

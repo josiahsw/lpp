@@ -27,7 +27,7 @@ calc_zscores <- function(weighted_projection, categories, stat) {
   dp_sd <- draftpool_summary(weighted_projection, stats::sd)
   
   if (stat == "bat") {
-    df <- weighted_projection %>%
+    zscore_projection <- weighted_projection %>%
       dplyr::mutate(
         zHR = z_score(HR, dp_mean["HR"], dp_sd["HR"]),
         zR = z_score(R, dp_mean["R"], dp_sd["R"]),
@@ -37,7 +37,7 @@ calc_zscores <- function(weighted_projection, categories, stat) {
         zOBP = z_score(wOBP, dp_mean["wOBP"], dp_sd["wOBP"])
       )
   } else {
-    df <- weighted_projection %>%
+    zscore_projection <- weighted_projection %>%
       dplyr::mutate(
         zW = z_score(W, dp_mean["W"], dp_sd["W"]),
         zQS = z_score(QS, dp_mean["QS"], dp_sd["QS"]),
@@ -51,12 +51,12 @@ calc_zscores <- function(weighted_projection, categories, stat) {
       )
   }
     # sum z-scores for selected categories
-  df <- df %>%
+  zscore_projection <- zscore_projection %>%
     dplyr::rowwise() %>%
     dplyr::mutate(zSUM = sum(dplyr::across(dplyr::all_of(selected_cols)), na.rm = TRUE)) %>%
     dplyr::ungroup()
     
-    return(df)
+    return(zscore_projection)
 }
 
 # helpers -----------------------------------------------------------------
