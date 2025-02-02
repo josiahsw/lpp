@@ -51,3 +51,7 @@ A list of length 2 containing a data frame of batter and pitcher auction values.
 \description{
 Run Last Player Picked
 }
+\examples{
+lpp(batter_projections, pitcher_projections)
+
+}
