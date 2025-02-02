@@ -5,12 +5,13 @@
 #' Closely follows the method outlined in this article:
 #' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/.
 #'
-#' @param cleaned_projection A data frame of cleaned batter or pitcher projections
-#'                           from clean_projections().
+#' @param cleaned_projection A data frame of cleaned batter or pitcher 
+#'                           projections from clean_projections().
 #' @param n_drafted An integer, the number of batters or pitchers drafted. 
-#' @param stat Either "bat" for batter stats, or "pit" for pitching stats.
-#'
-#' @return The cleaned projection data frame with weighted rate stat variables added.
+#' @param stat Either "bat" for batter projections, or "pit" for pitcher 
+#'             projections.
+#' @return The cleaned projection data frame with weighted rate stat variables 
+#'         added.
 #' @noRd
 weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
