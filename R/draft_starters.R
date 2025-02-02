@@ -145,8 +145,6 @@ top_avail_bench <- function(df_bat, df_pit, bench_slots) {
 #'
 #' @returns A character vector, rank ordered fangraphs_ids of drafted players.
 #' @noRd
-#'
-#' @examples
 combined_rankings <- function(drafted_bat, drafted_pit) {
   b <- drafted_bat %>%
     dplyr::filter(drafted == TRUE) %>%
