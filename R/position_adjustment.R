@@ -11,22 +11,23 @@
 #' testing to be generalized to all cases, but certainly works for my primary 
 #' use case. This function works for both batters and pitchers.
 #'
-#' @param dfs A list of length 2 containing a data frame of batter z-scores and
-#'            a data frame of pitcher z-scores. The list is the output of the 
-#'            find_optimal_zscores() function.
+#' @param optimal_zscores A list of length 2 containing a data frame of optimal
+#'                        batter z-scores and a data frame of optimal pitcher 
+#'                        z-scores. The output of find_optimal_zscores().
+#' @inheritParams lpp
 #'
 #' @return A list of length 2 containing position adjusted batter z-scores and
-#'         position adjusted pitcher z-scores.l
+#'         position adjusted pitcher z-scores.
 #' @noRd
-position_adjustment <- function (dfs, pos_adj_method = c("hold_harmless", "zero_out", "DH_to_1B", "simple", "none")) {
+position_adjustment <- function (optimal_zscores, pos_adj) {
   pos_adj_method <- match.arg(pos_adj_method)
   # need to make sure bat df is first in input list, or else results frame will be named wrong
   # Initialize an empty list to store results
   dfs_adjusted <- list()
   
   # Loop over each data frame in the input list and apply position adjustment
-  for (i in 1:length(dfs)) {
-    df <- dfs[[i]]  # Get the current data frame
+  for (i in 1:length(optimal_zscores)) {
+    df <- optimal_zscores[[i]]  # Get the current data frame
     
     if (pos_adj_method == "none") {
       # Step 1: Find count of players drafted
@@ -98,6 +99,5 @@ position_adjustment <- function (dfs, pos_adj_method = c("hold_harmless", "zero_
       dfs_adjusted$pit <- df_adjusted  # For pitchers
     }
   }
-  
   return(dfs_adjusted)
 }
