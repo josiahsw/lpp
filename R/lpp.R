@@ -12,6 +12,7 @@
 #' @param bat_pos A named integer vector. The number of batters drafted at each position per team.
 #' @param pit_pos A named integer vector. The number of pitchers drafted at each position per team.
 #' @param bench An integer. The number of bench players drafted by each team.
+#' @param pos_adj Position adjustment method. 
 #'
 #' @returns A list of length 2 containing a data frame of batter and pitcher auction values.
 #' @export
@@ -31,7 +32,8 @@ lpp <- function(
     bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
                 "MI" = 1, "OF" = 5, "UT" = 1),
     pit_pos = c("SP" = 6, "RP" = 3, "P" = 0), 
-    bench = 2 
+    bench = 2, 
+    pos_adj = c("hold_harmless", "zero_out", "DH_to_1B", "simple", "none")
     ) {
   
   clean_projections(bat, pit) %>%
