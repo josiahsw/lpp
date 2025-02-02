@@ -1,6 +1,4 @@
-
-
-test_that("top_avail() only accepts valid 'slot' argument", {
+test_that("find_top_avail() only accepts valid 'slot' argument", {
   pos <- c("C", "1B", "2B", "SS", "3B", "OF")
   df <- data.frame(
     "zHR" = rnorm(500, mean = 0, sd = .2),
@@ -17,12 +15,12 @@ test_that("top_avail() only accepts valid 'slot' argument", {
   too_long <- c("C" = 12, "1B" = 12)
   just_right <- c("MI" = 12)
   
-  expect_error(top_avail(df, not_named))
-  expect_error(top_avail(df, too_long))
-  expect_no_error(top_avail(df, just_right))
+  expect_error(find_top_avail(df, not_named))
+  expect_error(find_top_avail(df, too_long))
+  expect_no_error(find_top_avail(df, just_right))
 })
 
-test_that("top_avail() returns NULL if slot == 0", {
+test_that("find_top_avail() returns NULL if slot == 0", {
   pos <- c("C", "1B", "2B", "SS", "3B", "OF")
   df <- data.frame(
     "zHR" = rnorm(500, mean = 0, sd = .2),
@@ -36,11 +34,11 @@ test_that("top_avail() returns NULL if slot == 0", {
   )
   
   slot <- c("UT" = 0)
-  result <- top_avail(df, slot)
+  result <- find_top_avail(df, slot)
   expect_null(result)
 })
 
-test_that("top_avail() returns correct type and length", {
+test_that("find_top_avail() returns correct type and length", {
   pos <- c("C", "1B", "2B", "SS", "3B", "OF")
   df <- data.frame(
     "zHR" = rnorm(500, mean = 0, sd = .2),
@@ -54,7 +52,7 @@ test_that("top_avail() returns correct type and length", {
   )
   
   slot <- c("3B" = 12)
-  result <- top_avail(df, slot)
+  result <- find_top_avail(df, slot)
   expect_vector(result, ptype = character(), size = slot)
 })
 
@@ -74,7 +72,7 @@ test_that("mark_drafted_players() works", {
   expect_true(sum(df$drafted) == 0)
   
   slot <- c("OF" = 30)
-  result <- top_avail(df, slot)
+  result <- find_top_avail(df, slot)
   df <- mark_drafted_players(df, result)
   
   # only correct ids are marked as drafted
