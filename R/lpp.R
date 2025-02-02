@@ -37,5 +37,6 @@ lpp <- function(
     ) {
   
   clean_projections(bat, pit) %>%
-    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
+    position_adjustment(pos_adj)
 }
