@@ -9,7 +9,7 @@
 #'                             projections from weight_rate_stats().
 #' @param categories A vector of batter or pitcher categories. Either 
 #'                   "bat_cat" or "pit_cat".
-#' @param stat "bat" for batting projections, or "pit" for pitching projections.
+#' @inheritParams weight_rate_stats
 #'
 #' @return The weighted projections data frame with z-score variables added.
 #' @noRd
