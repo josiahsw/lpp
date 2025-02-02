@@ -19,6 +19,15 @@ test_that("weight_rate_stats() does not assign drafted values if they exist", {
   expect_equal(sum(df$drafted), 1)
 })
 
+test_that("weight_rate_stats() creates expected columns", {
+  result <- clean_projections(batter_projections, pitcher_projections)
+  n_drafted <- 150
+  wbat <- weight_rate_stats(result$bat, n_drafted, "bat")
+  wpit <- weight_rate_stats(result$pit, n_drafted, "pit")
+  expect_true(all(c("wAVG", "wOBP") %in% names(wbat)))
+  expect_true(all(c("wERA", "wWHIP") %in% names(wpit)))
+})
+
 test_that("draftpool_summary() throws error if no drafted players", {
   # check test data
   result <- clean_projections(batter_projections, pitcher_projections)
