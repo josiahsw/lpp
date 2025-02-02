@@ -5,7 +5,8 @@
 #' @param cleaned_projections A list of length 2 containing the output of 
 #'                            clean_projections()
 #' @inheritParams lpp
-#' @param max_i An integer, the maximum number of iterations. Defaults to 25.
+#' @param max_i An integer, the maximum number of iterations. Used for testing.
+#'              Defaults to 25.
 #' @param test Select TRUE if testing the function, which will save the results 
 #'             of each iteration for inspection. Defaults to FALSE.
 #'
@@ -36,8 +37,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
     c(utils::head(cleaned_projections$bat$fangraphs_id, n_drafted$bat,
       utils::head(cleaned_projections$pit$fangraphs_id, n_drafted$pit)))
   max_iterations <- max_i
-  # only used for testing
-  test_list <- list()
+  test_list <- list()  # only used for testing
   
   while (i < max_iterations && !identical(current_rank, prior_rank)) {
     prior_rank <- current_rank
