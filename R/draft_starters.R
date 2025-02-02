@@ -1,72 +1,69 @@
-
-#' Draft starting (non-bench) batters
+#' Draft starting (non-bench) batters or pitchers
 #' 
-#' Simulates a draft. Identifies top players available at each slot by z-score
-#' and marks them as drafted. Starting with main slots (1B, 2B, etc.), then marks
-#' the next available MI and CI, then fills the remaining top players available 
-#' at UT.
+#' Simulates a draft. For example, identifies top players available at each slot 
+#' by z-score and marks them as drafted. Starting with main slots (1B, 2B, 
+#' etc.), then marks the next available MI and CI, then fills the remaining top 
+#' players available at UT.
 #'
-#' @param df Data frame of batter projection z-scores
-#' @param slots A named vector, batting slots and number to draft at each slot
-#'    from lg_config
+#' @param zscore_projection A data frame of z-scored batter or pitcher 
+#'                          projections from calc_zscores().
+#' @param n_drafted_by_pos A named vector, the number of batters or pitchers 
+#'                         drafted at each position. 
 #' @return A data frame, with drafted column
 #' @noRd
-draft_starters <- function(df, slots, stat) {
+draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
-  df <- df[order(df$zSUM, decreasing = TRUE), ]
-  df$drafted <- F
+  zscore_projection <- zscore_projection[order(zscore_projection$zSUM, decreasing = TRUE), ]
+  zscore_projection$drafted <- F
   
   if (stat == "bat") {
     stopifnot(
       all(c("C", "1B", "2B", "3B", "SS", "OF", "MI", "CI", "UT") %in% 
-            names(slots)))
+            names(n_drafted_by_pos)))
     
-    main_slots <- slots[c("C", "1B", "2B", "3B", "SS", "OF")]
+    main_slots <- n_drafted_by_pos[c("C", "1B", "2B", "3B", "SS", "OF")]
     
     drafted <- vector("list", length(main_slots))
     for (i in seq_along(main_slots)) {
-      drafted[[i]] <- top_avail(df, main_slots[i])
+      drafted[[i]] <- find_top_avail(zscore_projection, main_slots[i])
     }
     
     main <- unlist(drafted)
-    df <- mark_drafted_players(df, main)
+    draft_results <- mark_drafted_players(draft_results, main)
     
-    multi_slots <- slots[c("CI", "MI")]
+    multi_slots <- n_drafted_by_pos[c("CI", "MI")]
     
     drafted <- vector("list", length(multi_slots))
     for (i in seq_along(multi_slots)) {
-      drafted[[i]] <- top_avail(df, multi_slots[i])
+      drafted[[i]] <- find_top_avail(draft_results, multi_slots[i])
     }
     
     multi <- unlist(drafted)
-    df <- mark_drafted_players(df, multi)
+    draft_results <- mark_drafted_players(draft_results, multi)
     
-    ut <- top_avail(df, slots["UT"])
-    df <- mark_drafted_players(df, ut)
-    
+    ut <- find_top_avail(draft_results, n_drafted_by_pos["UT"])
+    draft_results <- mark_drafted_players(draft_results, ut)
   } else {
-    stopifnot(all(c("SP", "RP", "P") %in% names(slots)))
+    stopifnot(all(c("SP", "RP", "P") %in% names(n_drafted_by_pos)))
     
-    main_slots <- slots[c("SP", "RP")]
+    main_slots <- n_drafted_by_pos[c("SP", "RP")]
     
     drafted <- vector("list", length(main_slots))
     for (i in seq_along(main_slots)) {
-      drafted[[i]] <- top_avail(df, main_slots[i])
+      drafted[[i]] <- find_top_avail(draft_results, main_slots[i])
     }
     
     main <- unlist(drafted)
-    df <- mark_drafted_players(df, main)
+    draft_results <- mark_drafted_players(draft_results, main)
     
-    p <- top_avail(df, slots["P"])
-    df <- mark_drafted_players(df, p)
+    p <- find_top_avail(draft_results, n_drafted_by_pos["P"])
+    draft_results <- mark_drafted_players(draft_results, p)
   }
-  
-  return(df)
+  return(draft_results)
 }
 
 # helpers -----------------------------------------------------------------
-
 #' Identify top available players
 #' 
 #' A helper that returns a vector of the top available players at a slot by 
@@ -80,7 +77,7 @@ draft_starters <- function(df, slots, stat) {
 #' @return A character vector of fangraphs_id of the top available players at a 
 #'    slot.
 #' @noRd
-top_avail <- function(df, slot) {
+find_top_avail <- function(df, slot) {
   stopifnot(length(slot) == 1, !is.null(names(slot)))
   
   if (slot == 0) {
@@ -132,7 +129,7 @@ top_avail_bench <- function(df_bat, df_pit, bench_slots) {
   all <- rbind(bat, pit)
   all <- all[order(all$zSUM, decreasing = TRUE), ]
   
-  bench <- top_avail(all, bench_slots)
+  bench <- find_top_avail(all, bench_slots)
   
   return(bench)
 } 
