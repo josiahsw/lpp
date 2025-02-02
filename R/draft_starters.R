@@ -9,13 +9,15 @@
 #'                          projections from calc_zscores().
 #' @param n_drafted_by_pos A named vector, the number of batters or pitchers 
 #'                         drafted at each position. 
-#' @return A data frame, with drafted column
+#' @return The zscore_projection data frame with updated drafted column
 #' @noRd
 draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
   stat <- match.arg(stat, choices = c("bat", "pit"))
   
-  zscore_projection <- zscore_projection[order(zscore_projection$zSUM, decreasing = TRUE), ]
-  zscore_projection$drafted <- F
+  # reset drafted column before each iteration
+  zscore_projection <- zscore_projection %>%
+    dplyr::mutate(drafted = FALSE) %>%
+    dplyr::arrange(dplyr::desc(zSUM))
   
   if (stat == "bat") {
     stopifnot(
@@ -30,7 +32,7 @@ draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
     }
     
     main <- unlist(drafted)
-    draft_results <- mark_drafted_players(draft_results, main)
+    draft_results <- mark_drafted_players(zscore_projection, main)
     
     multi_slots <- n_drafted_by_pos[c("CI", "MI")]
     
@@ -51,11 +53,11 @@ draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
     
     drafted <- vector("list", length(main_slots))
     for (i in seq_along(main_slots)) {
-      drafted[[i]] <- find_top_avail(draft_results, main_slots[i])
+      drafted[[i]] <- find_top_avail(zscore_projection, main_slots[i])
     }
     
     main <- unlist(drafted)
-    draft_results <- mark_drafted_players(draft_results, main)
+    draft_results <- mark_drafted_players(zscore_projection, main)
     
     p <- find_top_avail(draft_results, n_drafted_by_pos["P"])
     draft_results <- mark_drafted_players(draft_results, p)
