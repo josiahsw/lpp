@@ -9,6 +9,8 @@
 #'                          projections from calc_zscores().
 #' @param n_drafted_by_pos A named vector, the number of batters or pitchers 
 #'                         drafted at each position. 
+#' @inheritParams weight_rate_stats
+#' 
 #' @return The zscore_projection data frame with updated drafted column
 #' @noRd
 draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
