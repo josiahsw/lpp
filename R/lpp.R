@@ -33,7 +33,7 @@ lpp <- function(
                 "MI" = 1, "OF" = 5, "UT" = 1),
     pit_pos = c("SP" = 6, "RP" = 3, "P" = 0), 
     bench = 2, 
-    pos_adj = c("hold_harmless", "zero_out", "DH_to_1B", "simple", "none")
+    pos_adj = c("hold_harmless", "zero_out", "DH_to_1B", "simple", "bat_pit", "none")
     ) {
   
   clean_projections(bat, pit) %>%
