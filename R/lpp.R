@@ -1,20 +1,26 @@
 #' Run Last Player Picked
 #'
-#' @param bat A data frame of batter projections.
-#' @param pit A data frame of pitcher projections.
+#' @param bat A data frame of batter projections from fangraphs.
+#' @param pit A data frame of pitcher projections from fangraphs.
 #' @param keepers A data frame of keepers and values. Defaults to NULL.
-#' @param lg League: "AL", "NL", or "MLB" (the default).
+#' @param lg A string. "AL", "NL", or "MLB" (the default).
 #' @param teams An integer. The number of teams in the league. Defaults to 12.
-#' @param budget An integer. The starting auction budget of each team in the league. Defaults to 260.
+#' @param budget An integer. The starting auction budget of each team in the 
+#'               league. Defaults to 260.
 #' @param min_bid An integer. The minimum auction bid. Defaults to 1.
 #' @param bat_cat A character vector of league batting categories.
 #' @param pit_cat A character vector of league pitching categories.
-#' @param bat_pos A named integer vector. The number of batters drafted at each position per team.
-#' @param pit_pos A named integer vector. The number of pitchers drafted at each position per team.
+#' @param bat_pos A named integer vector. The number of batters drafted at each 
+#'                position per team.
+#' @param pit_pos A named integer vector. The number of pitchers drafted at each 
+#'                position per team. 
 #' @param bench An integer. The number of bench players drafted by each team.
-#' @param pos_adj Position adjustment method. 
+#' @param pos_adj A string. The position adjustment method. One of "simple", 
+#'                "hold_harmless" (the default), "zero_out", "DH_to_1B", 
+#'                "bat_pit", or "none".
 #'
-#' @returns A list of length 2 containing a data frame of batter and pitcher auction values.
+#' @returns A list of length 2 containing a data frame of batter and pitcher 
+#'          auction values.
 #' @export
 #' @examples
 #' lpp(batter_projections, pitcher_projections)
@@ -33,7 +39,7 @@ lpp <- function(
                 "MI" = 1, "OF" = 5, "UT" = 1),
     pit_pos = c("SP" = 6, "RP" = 3, "P" = 0), 
     bench = 2, 
-    pos_adj = c("hold_harmless", "zero_out", "DH_to_1B", "simple", "bat_pit", "none")
+    pos_adj = "hold_harmless"
     ) {
   
   clean_projections(bat, pit) %>%
