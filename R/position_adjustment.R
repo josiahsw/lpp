@@ -16,88 +16,71 @@
 #'                        z-scores. The output of find_optimal_zscores().
 #' @inheritParams lpp
 #'
-#' @return A list of length 2 containing position adjusted batter z-scores and
-#'         position adjusted pitcher z-scores.
+#' @return A list of length 2 containing the optimal z-scores data frames with 
+#'         position adjustment fields added.
 #' @noRd
 position_adjustment <- function (optimal_zscores, pos_adj) {
-  pos_adj_method <- match.arg(pos_adj_method)
-  # need to make sure bat df is first in input list, or else results frame will be named wrong
-  # Initialize an empty list to store results
-  dfs_adjusted <- list()
+  stopifnot(
+    length(optimal_zscores) == 2, 
+    names(optimal_zscores[1]) == "bat", # bat df must be first in list
+    all(names(optimal_zscores) %in% c("bat", "pit"))
+    )
   
-  # Loop over each data frame in the input list and apply position adjustment
+  pos_adj_projections <- list()
   for (i in 1:length(optimal_zscores)) {
-    df <- optimal_zscores[[i]]  # Get the current data frame
+    df <- optimal_zscores[[i]]  # get the current data frame
     
-    if (pos_adj_method == "none") {
-      # Step 1: Find count of players drafted
-      last_player_picked <- df %>%
-        dplyr::filter(drafted == TRUE) %>%
-        dplyr::count() %>%
-        dplyr::pull(n)
+    if (pos_adj == "bat_pit") {
+      n_drafted <- sum(df$drafted == TRUE)
+      df <- df[order(-df$zSUM), ] # ensures df is sorted properly
+      zlpp <- df$zSUM[n_drafted] # zSUM of last player picked
       
-      # Step 2: Find zSUM of last player picked, disregarding position
-      lpp_zscore <- df %>% 
-        dplyr::arrange(-zSUM) %>% 
-        pull(zSUM) %>% 
-        .[last_player_picked]
-      
-      # Step 3: Add result to original data frame and create aSUM column
       df_adjusted <- df %>% 
-        dplyr::mutate(aPOS = lpp_zscore) %>%
+        dplyr::mutate(aPOS = zlpp) %>%
         dplyr::mutate(aSUM = zSUM - aPOS) %>%
         dplyr::arrange(desc(aSUM))
       
     } else {
-      # Step 1: Create position adjustment summary
-      pos_adj <- df %>%
+      pos_adj_summary <- df %>%
         dplyr::filter(drafted == TRUE) %>%
         dplyr::group_by(pos) %>%
         dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
       
-      # Identify positions with positive aPOS values
-      positive_positions <- pos_adj %>%
+      positive_positions <- pos_adj_summary %>%
         dplyr::filter(aPOS > 0) %>%
         dplyr::pull(pos) 
       
-      # Create message if there are positive aPOS values
       if (length(positive_positions) > 0) {
         message_text <- paste("Positions with positive aPOS values:", 
-                              paste(positive_positions, collapse = ", "), "-", 
-                              pos_adj_method, 
+                              paste(positive_positions, collapse = ", "), "--", 
+                              pos_adj, 
                               "position adjustment method applied")
         message(message_text)
       }
-      
-      # Step 2: Apply position adjustment method
-      pos_adj <- pos_adj %>%
+      # apply position adjustment method and merge with original data
+      pos_adj_summary <- pos_adj_summary %>%
         dplyr::mutate(
-          aPOS = case_when(
-            pos_adj_method == "hold_harmless" & aPOS > 0 ~ max(aPOS[aPOS < 0], na.rm = TRUE),
-            pos_adj_method == "zero_out" & aPOS > 0 ~ 0,
-            pos_adj_method == "DH_to_1B" & pos == "DH" ~ {
-              # Get the aPOS value for 1B and apply it to DH
+          aPOS = dplyr::case_when(
+            pos_adj == "hold_harmless" & aPOS > 0 ~ max(aPOS[aPOS < 0], na.rm = TRUE),
+            pos_adj == "zero_out" & aPOS > 0 ~ 0,
+            pos_adj == "DH_to_1B" & pos == "DH" ~ {
               aPOS_1B <- aPOS[pos == "1B"]
-              if(length(aPOS_1B) > 0) aPOS_1B else aPOS
+              if(length(aPOS_1B) > 0) aPOS_1B else aPOS  # needed so function can still apply to pitching df
             },
-            pos_adj_method == "simple" ~ aPOS,  # Initial position adjustments used for "simple"
-            TRUE ~ aPOS  # Default case
+            pos_adj == "simple" ~ aPOS,
+            TRUE ~ aPOS  # default case
           )
         )
-      
-      # Step 3: Merge with original data frame and create aSUM column
       df_adjusted <- df %>%
-        dplyr::left_join(pos_adj, by = "pos") %>%
+        dplyr::left_join(pos_adj_summary, by = "pos") %>%
         dplyr::mutate(aSUM = zSUM - aPOS) %>%
         dplyr::arrange(desc(aSUM))
     }
-    
-    # Assign names to the list based on the data frame type
     if (i == 1) {
-      dfs_adjusted$bat <- df_adjusted  # For batters
+      pos_adj_projections$bat <- df_adjusted
     } else if (i == 2) {
-      dfs_adjusted$pit <- df_adjusted  # For pitchers
+      pos_adj_projections$pit <- df_adjusted
     }
   }
-  return(dfs_adjusted)
+  return(pos_adj_projections)
 }
