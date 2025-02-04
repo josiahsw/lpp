@@ -52,7 +52,7 @@ position_adjustment <- function (optimal_zscores, pos_adj) {
       
       if (length(positive_positions) > 0) {
         message_text <- paste("Positions with positive aPOS values:", 
-                              paste(positive_positions, collapse = ", "), "--", 
+                              paste(positive_positions, collapse = ", "), "|", 
                               pos_adj, 
                               "position adjustment method applied")
         message(message_text)
