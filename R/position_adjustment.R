@@ -80,18 +80,6 @@ add_pos_adj <- function(optimal_zscore, zlpp) {
     dplyr::arrange(desc(aSUM))
 }
 
-#' Find the z-score of the last batter or pitcher picked
-#'
-#' @param optimal_zscore 
-#' @param n_drafted An integer, the total number of players to be drafted.
-#'
-#' @returns Numeric value - the z-score.
-#' @noRd
-find_lpp_zscore <- function(optimal_zscore, n_drafted) {
-  df <- optimal_zscore[order(-optimal_zscore$zSUM), ] # ensures df is sorted
-  df$zSUM[n_drafted]
-}
-
 adj_bat_pit <- function(df) {
   n_drafted <- find_n_drafted(df)
   df <- df[order(-df$zSUM), ] # ensures df is sorted
