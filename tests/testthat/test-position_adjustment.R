@@ -205,3 +205,31 @@ test_that("DH_to_1B pos_adj method works", {
   # aSUM calculates correctly
   expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
 })
+
+test_that("find_n_drafted() works", {
+  teams <- 12
+  bat_cat = c("HR", "R", "RBI", "SB", "OBP")
+  pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
+  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
+              "MI" = 1, "OF" = 5, "UT" = 1)
+  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
+  bench = 2 
+  
+  ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
+  
+  expect_true("drafted" %in% names(ctrl$bat))
+  n_bat <- sum(ctrl$bat$drafted == TRUE)
+  expect_equal(find_n_drafted(ctrl$bat), n_bat)
+  
+  # test in vectorized function
+  n_drafted <- lapply(ctrl, find_n_drafted)
+  test <- sum(unlist(n_drafted))
+  expect_equal(test, n_drafted$bat + n_drafted$pit)
+  
+  # test in mapply
+  zlpp <- mapply(find_nth_zscore, ctrl, n_drafted, SIMPLIFY = FALSE)
+  adjusted_zscores <- mapply(add_pos_adj, ctrl, zlpp, SIMPLIFY = FALSE)
+  expect_true(all(adjusted_zscores$bat$aPOS == zlpp$bat)) 
+  expect_true(all(adjusted_zscores$pit$aPOS == zlpp$pit))
+})
