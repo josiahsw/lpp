@@ -1,15 +1,8 @@
 #' Positional adjustment
 #' 
-#' Adjusts the total z-score value so the last player picked at each position
-#' is 0. Based on LPP methodology (https://web.archive.org/web/20120725032008/http://www.lastplayerpicked.com/how-the-price-guide-works-part-ii-positional-adjustments/).
-#' Ohtani required a specific adjustment. Since he was the only DH and rated so
-#' highly, adjusting him down to zero would make no sense. Instead the minimum
-#' value and it's absolute value were found. Anyone within that range is 
-#' adjusted. Anyone above that range is not adjusted. This easily excludes
-#' Ohtani but still allows for situations where some positions may be adjusted
-#' down, such as in very shallow leagues. That approach may require more 
-#' testing to be generalized to all cases, but certainly works for my primary 
-#' use case. This function works for both batters and pitchers.
+#' Adjusts the total z-score value based on the position adjustment method
+#' selected. The "simple" position adjustment is based on the LPP methodology.
+#' https://web.archive.org/web/20120725032008/http://www.lastplayerpicked.com/how-the-price-guide-works-part-ii-positional-adjustments/
 #'
 #' @param optimal_zscores A list of length 2 containing a data frame of optimal
 #'                        batter z-scores and a data frame of optimal pitcher 
@@ -22,7 +15,6 @@
 position_adjustment <- function (optimal_zscores, pos_adj) {
   stopifnot(
     length(optimal_zscores) == 2, 
-    names(optimal_zscores[1]) == "bat", # bat df must be first in list
     all(names(optimal_zscores) %in% c("bat", "pit"))
     )
   
@@ -34,14 +26,14 @@ position_adjustment <- function (optimal_zscores, pos_adj) {
   } else if (pos_adj == "bat_pit") {
     adjusted_zscores <- lapply(optimal_zscores, adj_bat_pit)
   } else {
-    adjusted_zscores <- lapply(optimal_zscores, adj_simple, pos_adj)
+    adjusted_zscores <- lapply(optimal_zscores, adj_simple, pos_adj = pos_adj)
   }
   
   return(adjusted_zscores)
 }
 
 # helpers -----------------------------------------------------------------
-#' Find the number of players in a data frame that are marked as drafted
+#' Find the number of players marked as drafted
 #'
 #' @param df A data frame of batter or pitcher projections with drafted players
 #'           identified.
@@ -52,7 +44,7 @@ find_n_drafted <- function(df){
   sum(df$drafted == TRUE)
 }
 
-#' Find the z-score of the last player picked, ignoring position
+#' Find the z-score of the overall last player picked, ignoring position
 #'
 #' @inheritParams position_adjustment
 #' @param n_drafted An integer, the total number of players to be drafted.
@@ -62,24 +54,31 @@ find_n_drafted <- function(df){
 combined_lpp_zscore <- function(optimal_zscores, n_drafted) {
   b <- optimal_zscores[["bat"]]
   p <- optimal_zscores[["pit"]]
-  zscores_combined <- order(c(b$zSUM, p$zSUM), decreasing = TRUE)
+  zscores_combined <- sort(c(b$zSUM, p$zSUM), decreasing = TRUE)
   zscores_combined[n_drafted]
 }
 
 #' Add position adjustment to data frame
 #'
-#' @param optimal_zscore A data frame of batter or pitcher optimal z-scores.
+#' @param df A data frame of batter or pitcher z-scores.
 #' @param zlpp Numeric, the z-score of the last player picked.
 #'
 #' @returns
 #' @noRd
-add_pos_adj <- function(optimal_zscore, zlpp) {
-  optimal_zscore %>% 
+add_pos_adj <- function(df, zlpp) {
+  df %>% 
     dplyr::mutate(aPOS = zlpp) %>%
     dplyr::mutate(aSUM = zSUM - aPOS) %>%
     dplyr::arrange(desc(aSUM))
 }
 
+#' Apply bat_pit position adjustment
+#'
+#' @param df A data frame of batter or pitcher z-scores with drafted players
+#'           identified.
+#'
+#' @returns The data frame with bat_pit adjustment applied.
+#' @noRd
 adj_bat_pit <- function(df) {
   n_drafted <- find_n_drafted(df)
   df <- df[order(-df$zSUM), ] # ensures df is sorted
@@ -87,15 +86,21 @@ adj_bat_pit <- function(df) {
   add_pos_adj(df, zlpp)
 }
 
+#' Apply simple position adjustment and other related position adjustments
+#'
+#' @param df A data frame of batter or pitcher z-scores with drafted players
+#'           identified.
+#' @inheritParams lpp
+#'
+#' @returns The data frame with specified adjustment applied.
+#' @noRd
 adj_simple <- function(df, pos_adj) {
   pos_adj_summary <- df %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
   
-  positive_positions <- pos_adj_summary %>%
-    dplyr::filter(aPOS > 0) %>%
-    dplyr::pull(pos) 
+  positive_positions <- pos_adj_summary$pos[pos_adj_summary$aPOS > 0]
   
   if (length(positive_positions) > 0) {
     message_text <- paste("Positions with positive aPOS values:", 
@@ -104,7 +109,8 @@ adj_simple <- function(df, pos_adj) {
                           "position adjustment method applied")
     message(message_text)
   }
-  # apply position adjustment method and merge with original data
+  
+  # apply position adjustment method
   pos_adj_summary <- pos_adj_summary %>%
     dplyr::mutate(
       aPOS = dplyr::case_when(
