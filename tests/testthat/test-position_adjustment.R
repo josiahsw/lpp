@@ -86,8 +86,7 @@ test_that("pos_adj == none works", {
   # output is expected
   expect_true(length(test) == 2)
   expect_true(all(names(test) %in% c("bat", "pit")))
-  expect_true(all(sapply(ctrl, is.data.frame)))
-  expect_identical(ctrl, test)
+  expect_true(all(sapply(test, is.data.frame)))
   
   # all batter and pitcher position adjustments are the same
   expect_true(setequal(test$bat$aPOS, test$pit$aPOS))
@@ -96,6 +95,47 @@ test_that("pos_adj == none works", {
   b <- sum(test$bat$aSUM >= 0)
   p <- sum(test$pit$aSUM >= 0)
   expect_equal(n_drafted, b + p)
+  
+  # control and test are the same
+  expect_identical(ctrl, test)
+})
+
+test_that("adj_bat_pit() works", {
+  teams <- 12
+  bat_cat = c("HR", "R", "RBI", "SB", "OBP")
+  pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
+  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
+              "MI" = 1, "OF" = 5, "UT" = 1)
+  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
+  bench = 2 
+  
+  ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
+  bat <- ctrl$bat
+  
+  n_drafted <- find_n_drafted(bat)
+  bat <- bat[order(-bat$zSUM), ] # ensures df is sorted
+  zlpp <- bat$zSUM[n_drafted] # last player picked z-score
+  ctrl <- add_pos_adj(bat, zlpp)
+  test <- adj_bat_pit(bat)
+  
+  # control and test are the same
+  expect_identical(ctrl, test)
+  
+  # control and test position adjustment are the same
+  expect_true(all(ctrl$aPOS == test$aPOS))
+  
+  # number of batters drafted == number of players where position adjustment > 0
+  expect_equal(sum(ctrl$drafted == TRUE), sum(test$aSUM >= 0))
+  
+  # no players with higher z-scores are below last player picked (df was properly sorted )
+  expect_true(min(test$zSUM[test$aSUM >= 0]) > max(test$zSUM[test$aSUM < 0]))
+  
+  # all batters receive the same adj
+  expect_true(all(test$aPOS == test$aPOS[1]))
+
+  # aSUM calculates correctly
+  expect_equal(ctrl$aSUM, test$zSUM - test$aPOS)
 })
 
 test_that("pos_adj == bat_pit works", {
@@ -112,25 +152,22 @@ test_that("pos_adj == bat_pit works", {
   test <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "bat_pit")
+  ctrl <- lapply(ctrl, adj_bat_pit)
   
-  ctrl <- 
+  # output is expected
+  expect_true(length(test) == 2)
+  expect_true(all(names(test) %in% c("bat", "pit")))
+  expect_true(all(sapply(ctrl, is.data.frame)))
   
-  n_drafted <- lapply(ctrl, find_n_drafted)
-  df <- df[order(-df$zSUM), ] # ensures df is sorted
-  zlpp <- df$zSUM[n_drafted] # last player picked z-score
-  add_pos_adj(df, zlpp)
-  
-  # number of pitchers and batters drafted is the same in control and test
-  expect_equal(sum(ctrl$bat$drafted == TRUE), sum(test$bat$aSUM >= 0))
-  expect_equal(sum(ctrl$pit$drafted == TRUE), sum(test$pit$aSUM >= 0))
-  # top batters and pitchers by z-score are adjusted
-  expect_true(min(test$bat$zSUM[test$bat$aSUM >= 0]) > max(test$bat$zSUM[test$bat$aSUM < 0]))
-  expect_true(min(test$pit$zSUM[test$pit$aSUM >= 0]) > max(test$pit$zSUM[test$pit$aSUM < 0]))
   # all batters receive the same adj, all pitchers receive the same adj
   expect_true(all(test$bat$aPOS == test$bat$aPOS[1]))
   expect_true(all(test$pit$aPOS == test$pit$aPOS[1]))
-  # aSUM calculates correctly
-  expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
+  
+  # batter and pitcher adjustments are not the same
+  expect_false(test$bat$aPOS[1] == test$pit$aPOS[1])
+  
+  # control and test are the same
+  expect_identical(ctrl, test)
 })
 
 test_that("simple pos_adj method works", {
