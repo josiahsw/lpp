@@ -85,7 +85,9 @@ test_that("pos_adj == none works", {
   
   # output is expected
   expect_true(length(test) == 2)
-  expect_true(all(names(test) %in% c("bat", "pit"))) 
+  expect_true(all(names(test) %in% c("bat", "pit")))
+  expect_true(all(sapply(ctrl, is.data.frame)))
+  expect_identical(ctrl, test)
   
   # all batter and pitcher position adjustments are the same
   expect_true(setequal(test$bat$aPOS, test$pit$aPOS))
@@ -94,9 +96,6 @@ test_that("pos_adj == none works", {
   b <- sum(test$bat$aSUM >= 0)
   p <- sum(test$pit$aSUM >= 0)
   expect_equal(n_drafted, b + p)
-  
-  # test output is the same as control output
-  expect_identical(ctrl, test)
 })
 
 test_that("pos_adj == bat_pit works", {
@@ -113,6 +112,8 @@ test_that("pos_adj == bat_pit works", {
   test <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "bat_pit")
+  
+  ctrl <- 
   
   n_drafted <- lapply(ctrl, find_n_drafted)
   df <- df[order(-df$zSUM), ] # ensures df is sorted
