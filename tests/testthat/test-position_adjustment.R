@@ -108,7 +108,6 @@ test_that("adj_bat_pit() works", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
   ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   bat <- ctrl$bat
@@ -146,7 +145,6 @@ test_that("pos_adj == bat_pit works", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
   ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   test <- clean_projections(batter_projections, pitcher_projections) %>%
@@ -157,7 +155,10 @@ test_that("pos_adj == bat_pit works", {
   # output is expected
   expect_true(length(test) == 2)
   expect_true(all(names(test) %in% c("bat", "pit")))
-  expect_true(all(sapply(ctrl, is.data.frame)))
+  expect_true(all(sapply(test, is.data.frame)))
+  
+  # control and test are the same
+  expect_identical(ctrl, test)
   
   # all batters receive the same adj, all pitchers receive the same adj
   expect_true(all(test$bat$aPOS == test$bat$aPOS[1]))
@@ -165,12 +166,9 @@ test_that("pos_adj == bat_pit works", {
   
   # batter and pitcher adjustments are not the same
   expect_false(test$bat$aPOS[1] == test$pit$aPOS[1])
-  
-  # control and test are the same
-  expect_identical(ctrl, test)
 })
 
-test_that("simple pos_adj method works", {
+test_that("adj_simple() works", {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
@@ -178,42 +176,72 @@ test_that("simple pos_adj method works", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
+  ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
+  bat_summary <- ctrl$bat %>%
+    dplyr::filter(drafted == TRUE) %>%
+    dplyr::group_by(pos) %>%
+    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
+  pit_summary <- ctrl$pit %>%
+    dplyr::filter(drafted == TRUE) %>%
+    dplyr::group_by(pos) %>%
+    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
+  btest <- adj_simple(ctrl$bat, "simple")
+  ptest <- adj_simple(ctrl$pit, "simple")
   
+  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF", "DH")
+  pit_pos <- c("SP", "RP")
+  
+  # correct columns are created
+  expect_true(all(c("aPOS", "aSUM") %in% names(btest)))
+  
+  # all individual positions receive the adjustment from the control summary
+  bat_adj <- sapply(bat_pos, function (pos) {
+    all(test$aPOS[test$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
+        })
+  pit_adj <- sapply(pit_pos, function (pos) {
+    all(test$aPOS[test$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
+  })
+  expect_true(all(bat_adj))
+  expect_true(all(pit_adj))
+
+  # all position adjustments are different - this is an assumption
+  expect_true(length(unique(bat_summary$aPOS)) == length(bat_summary$aPOS))
+  expect_true(length(unique(pit_summary$aPOS)) == length(pit_summary$aPOS))
+  
+  # positive position adjustments are left alone
+  expect_true(sum(bat_summary$aPOS > 0) > 0)
+  expect_true(sum(btest$aPOS > 0) > 0)
+  
+  # aSUM calculates correctly
+  expect_equal(btest$aSUM, btest$zSUM - btest$aPOS)
+})
+
+test_that("pos_adj == simple method works", {
+  teams <- 12
+  bat_cat = c("HR", "R", "RBI", "SB", "OBP")
+  pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
+  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
+              "MI" = 1, "OF" = 5, "UT" = 1)
+  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
+  bench = 2 
   ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   test <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "simple")
+  ctrl <- lapply(ctrl, adj_simple, pos_adj = "simple")
   
-  ctrl_pa_bat <- ctrl$bat %>%
-    dplyr::filter(drafted == TRUE) %>%
-    dplyr::group_by(pos) %>%
-    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  ctrl_pa_pit <- ctrl$pit %>%
-    dplyr::filter(drafted == TRUE) %>%
-    dplyr::group_by(pos) %>%
-    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
+  # output is expected
+  expect_true(length(test) == 2)
+  expect_true(all(names(test) %in% c("bat", "pit")))
+  expect_true(all(sapply(test, is.data.frame)))
   
-  # all individual positions receive the same adjustment, and that the adjustment matches the control
-  expect_true(all(test$bat$aPOS[test$bat$pos == "1B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "1B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "2B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "2B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "3B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "3B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "C"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "C"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "DH"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "DH"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "OF"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "OF"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "SS"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "SS"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "SP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "SP"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "RP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "RP"]))
-  # all position adjustments are different - this is an assumption
-  expect_true(length(unique(ctrl_pa_bat$aPOS)) == length(ctrl_pa_bat$aPOS))
-  expect_true(length(unique(ctrl_pa_pit$aPOS)) == length(ctrl_pa_pit$aPOS))
-  # positive position adjustments are left alone
-  expect_true(sum(test$bat$aPOS > 0) > 0)
-  # aSUM calculates correctly
-  expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
+  # control and test are the same
+  expect_identical(ctrl, test)
 })
 
-test_that("hold_harmless pos_adj method works", {
+test_that("pos_adj == hold_harmless method works", {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
@@ -221,46 +249,49 @@ test_that("hold_harmless pos_adj method works", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
   ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   test <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "hold_harmless")
   
-  ctrl_pa_bat <- ctrl$bat %>%
+  bat_summary <- ctrl$bat %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  ctrl_pa_pit <- ctrl$pit %>%
+  pit_summary <- ctrl$pit %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  
-  positive_positions <- ctrl_pa_bat %>%
+  positive_positions <- bat_summary %>%
     dplyr::filter(aPOS > 0) %>%
     dplyr::pull(pos) 
-  hh_pa <- max(ctrl_pa_bat$aPOS[ctrl_pa_bat$aPOS < 0], na.rm = TRUE)
+  hh_pa <- max(bat_summary$aPOS[bat_summary$aPOS < 0], na.rm = TRUE)
   
-  # positive positions receive hold_harmless adjustment
+  # positive positions receive control hold_harmless adjustment
   expect_equal(positive_positions, "DH")
   expect_true(all(test$bat$aPOS[test$bat$pos == "DH"] == hh_pa))
-  # all other individual positions receive the same adjustment, and that adjustment matches the control
-  expect_true(all(test$bat$aPOS[test$bat$pos == "1B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "1B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "2B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "2B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "3B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "3B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "C"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "C"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "OF"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "OF"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "SS"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "SS"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "SP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "SP"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "RP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "RP"]))
+
+  # all other individual positions receive adjustment from the control summary
+  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF") # DH removed
+  pit_pos <- c("SP", "RP")
+  bat_adj <- sapply(bat_pos, function (pos) {
+    all(test$bat$aPOS[test$bat$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
+  })
+  pit_adj <- sapply(pit_pos, function (pos) {
+    all(test$aPOS[test$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
+  })
+  expect_true(all(bat_adj))
+  expect_true(all(pit_adj))
+  
   # there are no positive position adjustments
   expect_true(sum(test$bat$aPOS > 0) == 0)
+
   # aSUM calculates correctly
   expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
 })
 
-test_that("zero_out pos_adj method works", {
+test_that("pos_adj == zero_out method works", {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
@@ -268,40 +299,43 @@ test_that("zero_out pos_adj method works", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
   ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   test <- clean_projections(batter_projections, pitcher_projections) %>%
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "zero_out")
   
-  ctrl_pa_bat <- ctrl$bat %>%
+  bat_summary <- ctrl$bat %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  ctrl_pa_pit <- ctrl$pit %>%
+  pit_summary <- ctrl$pit %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  
-  positive_positions <- ctrl_pa_bat %>%
+  positive_positions <- bat_summary %>%
     dplyr::filter(aPOS > 0) %>%
     dplyr::pull(pos) 
   
   # positive positions are zeroed out 
   expect_equal(positive_positions, "DH")
   expect_true(all(test$bat$aPOS[test$bat$pos == "DH"] == 0))
-  # all other individual positions receive the same adjustment, and that adjustment matches the control
-  expect_true(all(test$bat$aPOS[test$bat$pos == "1B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "1B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "2B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "2B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "3B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "3B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "C"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "C"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "OF"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "OF"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "SS"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "SS"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "SP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "SP"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "RP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "RP"]))
+  
+  # all other individual positions receive adjustment from the control summary
+  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF") # DH removed
+  pit_pos <- c("SP", "RP")
+  bat_adj <- sapply(bat_pos, function (pos) {
+    all(test$bat$aPOS[test$bat$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
+  })
+  pit_adj <- sapply(pit_pos, function (pos) {
+    all(test$aPOS[test$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
+  })
+  expect_true(all(bat_adj))
+  expect_true(all(pit_adj))
+
   # there are no positive position adjustments
   expect_true(sum(test$bat$aPOS > 0) == 0)
+  
   # aSUM calculates correctly
   expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
 })
@@ -321,59 +355,37 @@ test_that("DH_to_1B pos_adj method works", {
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
     position_adjustment(pos_adj = "DH_to_1B")
   
-  ctrl_pa_bat <- ctrl$bat %>%
+  bat_summary <- ctrl$bat %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  ctrl_pa_pit <- ctrl$pit %>%
+  pit_summary <- ctrl$pit %>%
     dplyr::filter(drafted == TRUE) %>%
     dplyr::group_by(pos) %>%
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
-  
-  positive_positions <- ctrl_pa_bat %>%
+  positive_positions <- bat_summary %>%
     dplyr::filter(aPOS > 0) %>%
     dplyr::pull(pos) 
   
   # DH position adjustment is replaced with 1B
   expect_equal(positive_positions, "DH")
-  expect_true(all(test$bat$aPOS[test$bat$pos == "DH"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "1B"]))
-  # all other individual positions receive the same adjustment, and that adjustment matches the control
-  expect_true(all(test$bat$aPOS[test$bat$pos == "1B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "1B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "2B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "2B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "3B"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "3B"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "C"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "C"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "OF"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "OF"]))
-  expect_true(all(test$bat$aPOS[test$bat$pos == "SS"] == ctrl_pa_bat$aPOS[ctrl_pa_bat$pos == "SS"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "SP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "SP"]))
-  expect_true(all(test$pit$aPOS[test$pit$pos == "RP"] == ctrl_pa_pit$aPOS[ctrl_pa_pit$pos == "RP"]))
+  expect_true(all(test$bat$aPOS[test$bat$pos == "DH"] == bat_summary$aPOS[bat_summary$pos == "1B"]))
+  
+  # all other individual positions receive adjustment from the control summary
+  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF") # DH removed
+  pit_pos <- c("SP", "RP")
+  bat_adj <- sapply(bat_pos, function (pos) {
+    all(test$bat$aPOS[test$bat$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
+  })
+  pit_adj <- sapply(pit_pos, function (pos) {
+    all(test$aPOS[test$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
+  })
+  expect_true(all(bat_adj))
+  expect_true(all(pit_adj))
+  
+  # there are no positive position adjustments
+  expect_true(sum(test$bat$aPOS > 0) == 0)
+  
   # aSUM calculates correctly
   expect_equal(test$bat$aSUM, test$bat$zSUM - test$bat$aPOS)
-})
-
-test_that("find_n_drafted() works", {
-  teams <- 12
-  bat_cat = c("HR", "R", "RBI", "SB", "OBP")
-  pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
-  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
-              "MI" = 1, "OF" = 5, "UT" = 1)
-  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
-  bench = 2 
-  
-  ctrl <- clean_projections(batter_projections, pitcher_projections) %>%
-    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
-  
-  expect_true("drafted" %in% names(ctrl$bat))
-  n_bat <- sum(ctrl$bat$drafted == TRUE)
-  expect_equal(find_n_drafted(ctrl$bat), n_bat)
-  
-  # test in vectorized function
-  n_drafted <- lapply(ctrl, find_n_drafted)
-  test <- sum(unlist(n_drafted))
-  expect_equal(test, n_drafted$bat + n_drafted$pit)
-  
-  # test in mapply
-  zlpp <- mapply(find_nth_zscore, ctrl, n_drafted, SIMPLIFY = FALSE)
-  adjusted_zscores <- mapply(add_pos_adj, ctrl, zlpp, SIMPLIFY = FALSE)
-  expect_true(all(adjusted_zscores$bat$aPOS == zlpp$bat)) 
-  expect_true(all(adjusted_zscores$pit$aPOS == zlpp$pit))
 })
