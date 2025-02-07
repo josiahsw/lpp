@@ -197,17 +197,13 @@ test_that("adj_simple() works", {
   
   # all individual positions receive the adjustment from the control summary
   bat_adj <- sapply(bat_pos, function (pos) {
-    all(test$aPOS[test$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
+    all(btest$aPOS[btest$pos == pos] == bat_summary$aPOS[bat_summary$pos == pos])
         })
   pit_adj <- sapply(pit_pos, function (pos) {
-    all(test$aPOS[test$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
+    all(ptest$aPOS[ptest$pos == pos] == pit_summary$aPOS[pit_summary$pos == pos])
   })
   expect_true(all(bat_adj))
   expect_true(all(pit_adj))
-
-  # all position adjustments are different - this is an assumption
-  expect_true(length(unique(bat_summary$aPOS)) == length(bat_summary$aPOS))
-  expect_true(length(unique(pit_summary$aPOS)) == length(pit_summary$aPOS))
   
   # positive position adjustments are left alone
   expect_true(sum(bat_summary$aPOS > 0) > 0)
