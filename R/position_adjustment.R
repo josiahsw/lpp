@@ -128,5 +128,8 @@ adj_simple <- function(df, pos_adj) {
   df %>%
     dplyr::left_join(pos_adj_summary, by = "pos") %>%
     dplyr::mutate(aSUM = zSUM - aPOS) %>%
-    dplyr::arrange(desc(aSUM))
+    dplyr::arrange(dplyr::desc(aSUM))
 }
+
+# dplyr unquoted variable names to eliminate notes when running R CMD check
+utils::globalVariables(c("aPOS", "aSUM"))
