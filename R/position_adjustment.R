@@ -103,7 +103,7 @@ adj_simple <- function(df, pos_adj) {
   positive_positions <- pos_adj_summary$pos[pos_adj_summary$aPOS > 0]
   
   if (length(positive_positions) > 0) {
-    message_text <- paste("Positions with positive aPOS values:", 
+    message_text <- paste("Position(s) with positive aPOS values:", 
                           paste(positive_positions, collapse = ", "), "|", 
                           pos_adj, 
                           "position adjustment method applied")
