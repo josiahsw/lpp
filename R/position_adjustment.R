@@ -63,13 +63,13 @@ combined_lpp_zscore <- function(optimal_zscores, n_drafted) {
 #' @param df A data frame of batter or pitcher z-scores.
 #' @param zlpp Numeric, the z-score of the last player picked.
 #'
-#' @returns
+#' @returns The data frame with position adjustment columns added.
 #' @noRd
 add_pos_adj <- function(df, zlpp) {
   df %>% 
     dplyr::mutate(aPOS = zlpp) %>%
     dplyr::mutate(aSUM = zSUM - aPOS) %>%
-    dplyr::arrange(desc(aSUM))
+    dplyr::arrange(dplyr::desc(aSUM))
 }
 
 #' Apply bat_pit position adjustment
