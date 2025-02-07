@@ -42,7 +42,7 @@ lpp <- function(
     pos_adj = "hold_harmless"
     ) {
   
-  clean_projections(bat, pit) %>%
-    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) %>%
+  clean_projections(bat, pit) |>
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) |>
     position_adjustment(pos_adj)
 }
