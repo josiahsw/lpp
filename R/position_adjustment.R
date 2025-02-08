@@ -66,9 +66,9 @@ combined_lpp_zscore <- function(optimal_zscores, n_drafted) {
 #' @returns The data frame with position adjustment columns added.
 #' @noRd
 add_pos_adj <- function(df, zlpp) {
-  df %>% 
-    dplyr::mutate(aPOS = zlpp) %>%
-    dplyr::mutate(aSUM = zSUM - aPOS) %>%
+  df |>
+    dplyr::mutate(aPOS = zlpp) |>
+    dplyr::mutate(aSUM = zSUM - aPOS) |>
     dplyr::arrange(dplyr::desc(aSUM))
 }
 
@@ -108,7 +108,7 @@ adj_simple <- function(df, pos_adj) {
   }
   
   # apply position adjustment method
-  pos_adj_summary <- pos_adj_summary %>%
+  pos_adj_summary <- pos_adj_summary |>
     dplyr::mutate(
       aPOS = dplyr::case_when(
         pos_adj == "hold_harmless" & aPOS > 0 ~ max(aPOS[aPOS < 0], na.rm = TRUE),
@@ -122,9 +122,9 @@ adj_simple <- function(df, pos_adj) {
       )
     )
   
-  df %>%
-    dplyr::left_join(pos_adj_summary, by = "pos") %>%
-    dplyr::mutate(aSUM = zSUM - aPOS) %>%
+  df |>
+    dplyr::left_join(pos_adj_summary, by = "pos") |>
+    dplyr::mutate(aSUM = zSUM - aPOS) |>
     dplyr::arrange(dplyr::desc(aSUM))
 }
 
@@ -138,9 +138,9 @@ adj_simple <- function(df, pos_adj) {
 #' @returns A summary data frame of positions and their position adjustments
 #' @noRd
 simple_pos_adj_summary <- function(df) {
-  df %>%
-    dplyr::filter(drafted == TRUE) %>%
-    dplyr::group_by(pos) %>%
+  df |>
+    dplyr::filter(drafted == TRUE) |>
+    dplyr::group_by(pos) |>
     dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
 }
 
