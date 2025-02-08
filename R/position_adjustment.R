@@ -95,10 +95,7 @@ adj_bat_pit <- function(df) {
 #' @returns The data frame with specified adjustment applied.
 #' @noRd
 adj_simple <- function(df, pos_adj) {
-  pos_adj_summary <- df %>%
-    dplyr::filter(drafted == TRUE) %>%
-    dplyr::group_by(pos) %>%
-    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
+  pos_adj_summary <- simple_pos_adj_summary(df)
   
   positive_positions <- pos_adj_summary$pos[pos_adj_summary$aPOS > 0]
   
@@ -129,6 +126,22 @@ adj_simple <- function(df, pos_adj) {
     dplyr::left_join(pos_adj_summary, by = "pos") %>%
     dplyr::mutate(aSUM = zSUM - aPOS) %>%
     dplyr::arrange(dplyr::desc(aSUM))
+}
+
+#' Create simple position adjustment summary table
+#' 
+#' Used in adj_simple() and testing.
+#'
+#' @param df A data frame of batter or pitcher z-scores with drafted players
+#'           identified.
+#'
+#' @returns A summary data frame of positions and their position adjustments
+#' @noRd
+simple_pos_adj_summary <- function(df) {
+  df %>%
+    dplyr::filter(drafted == TRUE) %>%
+    dplyr::group_by(pos) %>%
+    dplyr::summarise(aPOS = min(zSUM, na.rm = TRUE))
 }
 
 # dplyr unquoted variable names to eliminate notes when running R CMD check
