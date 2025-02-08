@@ -22,13 +22,13 @@ weight_rate_stats <- function(cleaned_projection, n_drafted) {
   dp_mean <- draftpool_summary(cleaned_projection, mean)
   
   if ("PA" %in% names(cleaned_projection)) {
-    weighted_projection <- cleaned_projection %>%
+    weighted_projection <- cleaned_projection |>
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
         wOBP = x_above_avg(OB, PA, dp_mean["OBP"]) # converts to on-base above avg
       )
   } else {
-    weighted_projection <- cleaned_projection %>%
+    weighted_projection <- cleaned_projection |>
       dplyr::mutate(
         wERA = -x_above_avg(ER9, IP, dp_mean["ERA"]), # runs prevented above avg
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
@@ -51,9 +51,9 @@ weight_rate_stats <- function(cleaned_projection, n_drafted) {
 draftpool_summary <- function(df, fun) {
   stopifnot(any(df$drafted))
   
-  df %>%
-    dplyr::filter(drafted == TRUE) %>%
-    dplyr::summarise_if(is.numeric, fun) %>%
+  df |>
+    dplyr::filter(drafted == TRUE) |>
+    dplyr::summarise_if(is.numeric, fun) |>
     unlist()
 }
 
