@@ -32,3 +32,31 @@ test_that("expected columns are created", {
   expect_true(all(c("wAVG", "wOBP") %in% names(weighted$bat)))
   expect_true(all(c("wERA", "wWHIP") %in% names(weighted$pit)))
 })
+
+test_that("batter stats are calculated correctly", {
+  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  bat <- cleaned$bat
+  n_drafted <- 150
+  bat$drafted[1:n_drafted] <- TRUE
+  dp_mean <- draftpool_summary(bat, mean)
+  wAVG <- x_above_avg(bat$H, bat$AB, dp_mean["AVG"])
+  wOBP <- x_above_avg(bat$OB, bat$PA, dp_mean["OBP"])
+
+  weighted <- weight_rate_stats(bat, n_drafted)
+  expect_equal(weighted$wAVG, wAVG)
+  expect_equal(weighted$wOBP, wOBP)
+})
+
+test_that("pitcher stats are calculated correctly", {
+  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  pit <- cleaned$pit
+  n_drafted <- 150
+  pit$drafted[1:n_drafted] <- TRUE
+  dp_mean <- draftpool_summary(pit, mean)
+  wERA <- -x_above_avg(pit$ER9, pit$IP, dp_mean["ERA"])
+  wWHIP <- -x_above_avg(pit$WH, pit$IP, dp_mean["WHIP"])
+  
+  weighted <- weight_rate_stats(pit, n_drafted)
+  expect_equal(weighted$wERA, wERA)
+  expect_equal(weighted$wWHIP, wWHIP)
+})
