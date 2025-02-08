@@ -5,7 +5,7 @@ test_that("batter zSUM is accurate", {
   z_cols <- paste0("z", bat_cat)
   n_drafted <- 100
   
-  z <- weight_rate_stats(results$bat, n_drafted) |>
+  z <- weight_rate_stats(cleaned$bat, n_drafted) |>
     calc_zscores(bat_cat)
   
   test <- z |>
