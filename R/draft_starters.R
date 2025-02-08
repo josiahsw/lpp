@@ -14,8 +14,8 @@
 #' @noRd
 draft_starters <- function(zscore_projection, n_drafted_by_pos) {
   # reset drafted column before each iteration
-  zscore_projection <- zscore_projection %>%
-    dplyr::mutate(drafted = FALSE) %>%
+  zscore_projection <- zscore_projection |>
+    dplyr::mutate(drafted = FALSE) |>
     dplyr::arrange(dplyr::desc(zSUM))
   
   if ("PA" %in% names(zscore_projection)) {
@@ -143,15 +143,15 @@ top_avail_bench <- function(df_bat, df_pit, bench_slots) {
 #' @returns A character vector, rank ordered fangraphs_ids of drafted players.
 #' @noRd
 combined_rankings <- function(drafted_bat, drafted_pit) {
-  b <- drafted_bat %>%
-    dplyr::filter(drafted == TRUE) %>%
+  b <- drafted_bat |>
+    dplyr::filter(drafted == TRUE) |>
     dplyr::select(fangraphs_id, zSUM)
   
-  p <- drafted_pit %>%
-    dplyr::filter(drafted == TRUE) %>%
+  p <- drafted_pit |>
+    dplyr::filter(drafted == TRUE) |>
     dplyr::select(fangraphs_id, zSUM)
   
-  all <- dplyr::bind_rows(b, p) %>%
+  all <- dplyr::bind_rows(b, p) |>
     dplyr::arrange(dplyr::desc(zSUM))
   
   ranks <- all$fangraphs_id
