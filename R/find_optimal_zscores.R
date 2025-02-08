@@ -45,12 +45,12 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
     bat <- bat |>
       weight_rate_stats(n_drafted$bat) |>
       calc_zscores(bat_cat) |>
-      draft_starters(n_drafted_by_pos$bat, "bat")
+      draft_starters(n_drafted_by_pos$bat)
     
     pit <- pit |>
       weight_rate_stats(n_drafted$pit) |>
       calc_zscores(pit_cat) |>
-      draft_starters(n_drafted_by_pos$pit, "pit")
+      draft_starters(n_drafted_by_pos$pit)
     
     # draft bench players
     bench <- top_avail_bench(bat, pit, n_drafted_by_pos$bench)
