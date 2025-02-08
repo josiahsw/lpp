@@ -9,19 +9,16 @@
 #'                          projections from calc_zscores().
 #' @param n_drafted_by_pos A named vector, the number of batters or pitchers 
 #'                         drafted at each position. 
-#' @inheritParams weight_rate_stats
 #' 
 #' @return The zscore_projection data frame with updated drafted column.
 #' @noRd
-draft_starters <- function(zscore_projection, n_drafted_by_pos, stat) {
-  stat <- match.arg(stat, choices = c("bat", "pit"))
-  
+draft_starters <- function(zscore_projection, n_drafted_by_pos) {
   # reset drafted column before each iteration
   zscore_projection <- zscore_projection %>%
     dplyr::mutate(drafted = FALSE) %>%
     dplyr::arrange(dplyr::desc(zSUM))
   
-  if (stat == "bat") {
+  if ("PA" %in% names(zscore_projection)) {
     stopifnot(
       all(c("C", "1B", "2B", "3B", "SS", "OF", "MI", "CI", "UT") %in% 
             names(n_drafted_by_pos)))
