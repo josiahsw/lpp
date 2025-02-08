@@ -1,34 +1,34 @@
 test_that("drafted values are assigned if missing", {
-  result <- clean_projections(batter_projections, pitcher_projections)
-  expect_true(!all(result$bat$drafted))
-  expect_true(!all(result$pit$drafted))
+  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  expect_true(!all(cleaned$bat$drafted))
+  expect_true(!all(cleaned$pit$drafted))
   
   n_drafted <- 150
-  bat <- weight_rate_stats(result$bat, n_drafted, "bat")
-  pit <- weight_rate_stats(result$pit, n_drafted, "pit")
-  expect_equal(sum(bat$drafted), n_drafted)
-  expect_equal(sum(pit$drafted), n_drafted)
+  weighted <- lapply(cleaned, weight_rate_stats, n_drafted)
+  expect_equal(sum(weighted$bat$drafted), n_drafted)
+  expect_equal(sum(weighted$pit$drafted), n_drafted)
 })
 
 test_that("drafted values are not assigned if they exist", {
-  result <- clean_projections(batter_projections, pitcher_projections)
-  result$bat$drafted[1] <- TRUE
-  result$pit$drafted[1] <- TRUE
-  expect_equal(sum(result$bat$drafted), 1)
-  expect_equal(sum(result$pit$drafted), 1)
+  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  cleaned$bat$drafted[1] <- TRUE
+  cleaned$pit$drafted[1] <- TRUE
+  expect_equal(sum(cleaned$bat$drafted), 1)
+  expect_equal(sum(cleaned$pit$drafted), 1)
   
   n_drafted <- 150
-  bat <- weight_rate_stats(result$bat, n_drafted, "bat")
-  pit <- weight_rate_stats(result$pit, n_drafted, "pit")
-  expect_equal(sum(bat$drafted), 1)
-  expect_equal(sum(pit$drafted), 1)
+  weighted <- lapply(cleaned, weight_rate_stats, n_drafted)
+  expect_equal(sum(weighted$bat$drafted), 1)
+  expect_equal(sum(weighted$pit$drafted), 1)
 })
 
 test_that("expected columns are created", {
-  result <- clean_projections(batter_projections, pitcher_projections)
+  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  expect_false(all(c("wAVG", "wOBP") %in% names(cleaned$bat)))
+  expect_false(all(c("wERA", "wWHIP") %in% names(cleaned$pit)))
+  
   n_drafted <- 150
-  wbat <- weight_rate_stats(result$bat, n_drafted, "bat")
-  wpit <- weight_rate_stats(result$pit, n_drafted, "pit")
-  expect_true(all(c("wAVG", "wOBP") %in% names(wbat)))
-  expect_true(all(c("wERA", "wWHIP") %in% names(wpit)))
+  weighted <- lapply(cleaned, weight_rate_stats, n_drafted)
+  expect_true(all(c("wAVG", "wOBP") %in% names(weighted$bat)))
+  expect_true(all(c("wERA", "wWHIP") %in% names(weighted$pit)))
 })
