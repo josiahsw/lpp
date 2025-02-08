@@ -41,7 +41,7 @@ calc_zscores <- function(weighted_projection, categories) {
         zWHIP = z_score(wWHIP, dp_mean["wWHIP"], dp_sd["wWHIP"])
       )
   }
-  # sum z-scores for selected categories
+  # sum z-scores for selected categories -- base R 100x faster than dplyr
   zscore_projection$zSUM <- rowSums(as.matrix(zscore_projection[selected_cols]))
   return(zscore_projection)
 }
