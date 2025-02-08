@@ -9,18 +9,15 @@
 #'                             projections from weight_rate_stats().
 #' @param categories A vector of batter or pitcher categories. Either 
 #'                   "bat_cat" or "pit_cat".
-#' @inheritParams weight_rate_stats
 #'
 #' @return The weighted projections data frame with z-score variables added.
 #' @noRd
-calc_zscores <- function(weighted_projection, categories, stat) {
-  stat <- match.arg(stat, c("bat", "pit"))
-  
+calc_zscores <- function(weighted_projection, categories) {
   selected_cols <- paste0("z", categories)
   dp_mean <- draftpool_summary(weighted_projection, mean)
   dp_sd <- draftpool_summary(weighted_projection, stats::sd)
   
-  if (stat == "bat") {
+  if ("PA" %in% names(weighted_projection)) {
     zscore_projection <- weighted_projection %>%
       dplyr::mutate(
         zHR = z_score(HR, dp_mean["HR"], dp_sd["HR"]),
