@@ -8,14 +8,11 @@
 #' @param cleaned_projection A data frame of cleaned batter or pitcher 
 #'                           projections from clean_projections().
 #' @param n_drafted An integer, the number of batters or pitchers drafted. 
-#' @param stat Either "bat" for batter projections, or "pit" for pitcher 
-#'             projections.
+#'
 #' @return The cleaned projection data frame with weighted rate stat variables 
 #'         added.
 #' @noRd
-weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
-  stat <- match.arg(stat, choices = c("bat", "pit"))
-  
+weight_rate_stats <- function(cleaned_projection, n_drafted) {
   # for the first iteration where no players are marked as drafted yet.
   # this will be adjusted for in later iterations.
   if (sum(cleaned_projection$drafted) == 0) {
@@ -24,7 +21,7 @@ weight_rate_stats <- function(cleaned_projection, n_drafted, stat) {
   
   dp_mean <- draftpool_summary(cleaned_projection, mean)
   
-  if (stat == "bat") {
+  if ("PA" %in% names(cleaned_projection)) {
     weighted_projection <- cleaned_projection %>%
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
