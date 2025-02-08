@@ -42,14 +42,14 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
   while (i < max_iterations && !identical(current_rank, prior_rank)) {
     prior_rank <- current_rank
     
-    bat <- bat %>%
-      weight_rate_stats(n_drafted$bat) %>%
-      calc_zscores(bat_cat) %>%
+    bat <- bat |>
+      weight_rate_stats(n_drafted$bat) |>
+      calc_zscores(bat_cat) |>
       draft_starters(n_drafted_by_pos$bat, "bat")
     
-    pit <- pit %>%
-      weight_rate_stats(n_drafted$pit) %>%
-      calc_zscores(pit_cat) %>%
+    pit <- pit |>
+      weight_rate_stats(n_drafted$pit) |>
+      calc_zscores(pit_cat) |>
       draft_starters(n_drafted_by_pos$pit, "pit")
     
     # draft bench players
@@ -79,7 +79,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
     zbat <- paste0("z", bat_cat)
     zpit <- paste0("z", pit_cat)
     
-    bat <- bat %>%
+    bat <- bat |>
       dplyr::select(
         fangraphs_id,
         player_name,
@@ -90,12 +90,12 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
         dplyr::all_of(zbat),
         zSUM,
         drafted
-      ) %>%
+      ) |>
       dplyr::arrange(
         dplyr::desc(zSUM)
       )
     
-    pit <- pit %>%
+    pit <- pit |>
       dplyr::select(
         fangraphs_id,
         player_name,
@@ -105,7 +105,7 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
         dplyr::all_of(zpit),
         zSUM,
         drafted
-      ) %>%
+      ) |>
       dplyr::arrange(
         dplyr::desc(zSUM)
       )
