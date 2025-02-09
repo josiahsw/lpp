@@ -5,7 +5,8 @@
 #'
 #' @inheritParams lpp
 #'
-#' @returns A list of length 2 containing a data frame of cleaned batter and pitcher projections.
+#' @returns A list of length 2 containing a data frame of cleaned batter and 
+#'          pitcher projections.
 #' @noRd 
 clean_projections <- function(bat, pit) {
   bat <- bat %>%
