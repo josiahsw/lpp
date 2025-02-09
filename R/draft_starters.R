@@ -85,12 +85,12 @@ find_top_avail <- function(df, slot) {
 #' Mark drafted players
 #'
 #' @inheritParams find_top_avail
-#' @param top_avail A character vector of fangraphs_ids of the top available 
-#'                  players at a slot. The output of find_top_avail().
+#' @param ids A character vector of fangraphs_ids of the top available 
+#'            players at a slot. The output of find_top_avail().
 #'
 #' @return The data frame with top available players marked as drafted = TRUE.
 #' @noRd
-mark_drafted_players <- function(df, top_avail) {
+mark_drafted_players <- function(df, ids) {
   df$drafted <- ifelse(df$fangraphs_id %in% top_avail, T, df$drafted)
   return(df)
 }
