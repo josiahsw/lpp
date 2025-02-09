@@ -23,34 +23,25 @@ draft_starters <- function(zscore_projection, n_drafted_by_pos) {
       all(c("C", "1B", "2B", "3B", "SS", "OF", "MI", "CI", "UT") %in% 
             names(n_drafted_by_pos)))
     
-    main_slots <- n_drafted_by_pos[c("C", "1B", "2B", "3B", "SS", "OF")]
-    drafted <- vector("list", length(main_slots))
-    for (i in seq_along(main_slots)) {
-      drafted[[i]] <- find_top_avail(zscore_projection, main_slots[i])
-    }
-    main <- unlist(drafted)
-    draft_results <- mark_drafted_players(zscore_projection, main)
+    main <- n_drafted_by_pos[c("C", "1B", "2B", "3B", "SS", "OF")]
+    ids <- sapply(names(main), function(slot) find_top_avail(zscore_projection, main[slot]))
+    ids <- unlist(ids)
+    draft_results <- mark_drafted_players(zscore_projection, ids)
     
-    multi_slots <- n_drafted_by_pos[c("CI", "MI")]
-    drafted <- vector("list", length(multi_slots))
-    for (i in seq_along(multi_slots)) {
-      drafted[[i]] <- find_top_avail(draft_results, multi_slots[i])
-    }
-    multi <- unlist(drafted)
-    draft_results <- mark_drafted_players(draft_results, multi)
+    multi <- n_drafted_by_pos[c("CI", "MI")]
+    ids <- sapply(names(multi), function(slot) find_top_avail(draft_results, multi[slot]))
+    ids <- unlist(ids)
+    draft_results <- mark_drafted_players(draft_results, ids)
     
     ut <- find_top_avail(draft_results, n_drafted_by_pos["UT"])
     draft_results <- mark_drafted_players(draft_results, ut)
   } else {
     stopifnot(all(c("SP", "RP", "P") %in% names(n_drafted_by_pos)))
     
-    main_slots <- n_drafted_by_pos[c("SP", "RP")]
-    drafted <- vector("list", length(main_slots))
-    for (i in seq_along(main_slots)) {
-      drafted[[i]] <- find_top_avail(zscore_projection, main_slots[i])
-    }
-    main <- unlist(drafted)
-    draft_results <- mark_drafted_players(zscore_projection, main)
+    main <- n_drafted_by_pos[c("SP", "RP")]
+    ids <- sapply(names(main), function(slot) find_top_avail(zscore_projection, main[slot]))
+    ids <- unlist(ids)
+    draft_results <- mark_drafted_players(zscore_projection, ids)
     
     p <- find_top_avail(draft_results, n_drafted_by_pos["P"])
     draft_results <- mark_drafted_players(draft_results, p)
@@ -74,8 +65,6 @@ draft_starters <- function(zscore_projection, n_drafted_by_pos) {
 #'    slot.
 #' @noRd
 find_top_avail <- function(df, slot) {
-  stopifnot(length(slot) == 1, !is.null(names(slot)))
-  
   if (slot == 0) {
     return()
   }
@@ -87,7 +76,6 @@ find_top_avail <- function(df, slot) {
   } else if (names(slot) %in% c("UT", "P", "bench")) {
     df <- subset(df, !drafted)
   } else {
-    # included filter !drafted to be safe, but maybe not strictly needed
     df <- subset(df, !drafted & pos == names(slot))
   }
   
