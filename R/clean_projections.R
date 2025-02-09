@@ -9,7 +9,7 @@
 #'          pitcher projections.
 #' @noRd 
 clean_projections <- function(bat, pit) {
-  bat <- bat %>%
+  bat <- bat |>
     dplyr::select(
       fangraphs_id = playerid,
       player_name = PlayerName,
@@ -29,9 +29,9 @@ clean_projections <- function(bat, pit) {
       AVG,
       OBP,
       SLG
-    ) %>%
-    dplyr::filter(minpos != "PH/PR") %>%
-    dplyr::filter(minpos != "P") %>%
+    ) |>
+    dplyr::filter(minpos != "PH/PR") |>
+    dplyr::filter(minpos != "P") |>
     dplyr::mutate(
       OB = H + BB + HBP, # needed for weighting OBP
       pos = purrr::map_chr(minpos, find_priority_pos),
@@ -42,7 +42,7 @@ clean_projections <- function(bat, pit) {
     pit$QS <- as.double(NA)
   }
   
-  pit <- pit %>%
+  pit <- pit |>
     dplyr::select(
       fangraphs_id = playerid,
       player_name = PlayerName,
@@ -61,7 +61,7 @@ clean_projections <- function(bat, pit) {
       BB,
       ERA,
       WHIP
-    ) %>%
+    ) |>
     dplyr::mutate(
       xQS = ifelse(is.na(QS), quality_starts(GS, ERA, IP), QS),
       ER9 = ER * 9, # needed for weighting ERA
@@ -69,9 +69,9 @@ clean_projections <- function(bat, pit) {
       SVHLD = SV + HLD,
       pos = dplyr::if_else(GS > 3.5, "SP", "RP"),
       drafted = FALSE # needed for z-score
-    ) %>%
-    dplyr::select(-QS) %>%
-    dplyr::rename(QS = xQS) %>%
+    ) |>
+    dplyr::select(-QS) |>
+    dplyr::rename(QS = xQS) |>
     dplyr::mutate(
       WQS = W + QS
     ) 
