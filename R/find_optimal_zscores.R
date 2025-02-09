@@ -144,6 +144,56 @@ allocate_bench_slots <- function(bat_pos, pit_pos, bench, teams) {
   return(results)
 }
 
+#' Identify top available bench players
+#' 
+#' Combines batter and pitcher data frames to find top remaining un-drafted 
+#' players.
+#'
+#' @param df_bat A data frame of drafted starting batters.
+#' @param df_pit A data frame of drafted starting pitchers.
+#' @param bench_slots A named vector, the number of bench players drafted.
+#'
+#' @return A character vector of fangraphs_ids for top available bench players.
+#' @noRd
+top_avail_bench <- function(df_bat, df_pit, bench_slots) {
+  if (bench_slots == 0) {
+    return(NULL)
+  }
+  
+  bat <- df_bat[, c("fangraphs_id", "pos", "zSUM", "drafted")]
+  pit <- df_pit[, c("fangraphs_id", "pos", "zSUM", "drafted")]
+  all <- rbind(bat, pit)
+  all <- all[order(all$zSUM, decreasing = TRUE), ]
+  
+  bench <- find_top_avail(all, bench_slots)
+  return(bench)
+} 
+
+#' Find the final ranking of all players (batters and pitchers combined)
+#'
+#' @param drafted_bat A data frame with drafted starting and bench batters 
+#'                    identified.
+#' @param drafted_pit A data frame with drafted starting and bench pitchers 
+#'                    identified.
+#'
+#' @returns A character vector, rank ordered fangraphs_ids of drafted players.
+#' @noRd
+combined_rankings <- function(drafted_bat, drafted_pit) {
+  b <- drafted_bat |>
+    dplyr::filter(drafted == TRUE) |>
+    dplyr::select(fangraphs_id, zSUM)
+  
+  p <- drafted_pit |>
+    dplyr::filter(drafted == TRUE) |>
+    dplyr::select(fangraphs_id, zSUM)
+  
+  all <- dplyr::bind_rows(b, p) |>
+    dplyr::arrange(dplyr::desc(zSUM))
+  
+  ranks <- all$fangraphs_id
+  return(ranks)
+}
+
 # dplyr unquoted variable names to eliminate notes when running R CMD check
 utils::globalVariables(c("fangraphs_id", "player_name", "pos", "zSUM", 
                          "drafted"))
