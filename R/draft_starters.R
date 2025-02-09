@@ -24,27 +24,28 @@ draft_starters <- function(zscores, n_drafted_by_pos) {
     main <- n_drafted_by_pos[c("C", "1B", "2B", "3B", "SS", "OF")]
     ids <- sapply(names(main), function(slot) find_top_avail(zscores, main[slot]))
     ids <- unlist(ids)
-    draft_results <- mark_drafted_players(zscores, ids)
+    results <- mark_drafted_players(zscores, ids)
     
     multi <- n_drafted_by_pos[c("CI", "MI")]
-    ids <- sapply(names(multi), function(slot) find_top_avail(draft_results, multi[slot]))
+    ids <- sapply(names(multi), function(slot) find_top_avail(results, multi[slot]))
     ids <- unlist(ids)
-    draft_results <- mark_drafted_players(draft_results, ids)
+    results <- mark_drafted_players(results, ids)
     
-    ut <- find_top_avail(draft_results, n_drafted_by_pos["UT"])
-    draft_results <- mark_drafted_players(draft_results, ut)
+    ids <- find_top_avail(results, n_drafted_by_pos["UT"])
+    results <- mark_drafted_players(results, ids)
   } else {
     stopifnot(all(c("SP", "RP", "P") %in% names(n_drafted_by_pos)))
     
     main <- n_drafted_by_pos[c("SP", "RP")]
     ids <- sapply(names(main), function(slot) find_top_avail(zscores, main[slot]))
     ids <- unlist(ids)
-    draft_results <- mark_drafted_players(zscores, ids)
+    results <- mark_drafted_players(zscores, ids)
     
-    p <- find_top_avail(draft_results, n_drafted_by_pos["P"])
-    draft_results <- mark_drafted_players(draft_results, p)
+    ids <- find_top_avail(results, n_drafted_by_pos["P"])
+    results <- mark_drafted_players(results, ids)
   }
-  return(draft_results)
+  
+  return(results)
 }
 
 # helpers -----------------------------------------------------------------
