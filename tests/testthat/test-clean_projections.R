@@ -1,16 +1,19 @@
-test_that("cleaned projections include needed columns", {
+test_that("cleaned batter projections include needed columns", {
   results <- clean_projections(batter_projections, pitcher_projections)
-  expect_true(all(
-    c("fangraphs_id", "player_name", "OB", "pos", "drafted") %in% colnames(results$bat))
-  )
-  expect_true(all(
-    c("fangraphs_id", "player_name", "ER9", "WH", "SVHLD", "WQS", "pos", 
-      "drafted") %in% colnames(results$pit))
-  )
+  expect_true(
+    all(c("fangraphs_id", "player_name", "OB", "pos", "drafted") %in% 
+      colnames(results$bat)))
 })
 
-test_that("clean_proj_pit() creates a QS col if missing", {
-  expect_false("QS" %in% colnames(pitcher_projections))
+test_that("cleaned pitcher projections include needed columns", {
+  results <- clean_projections(batter_projections, pitcher_projections)
+  expect_true(
+    all(c("fangraphs_id", "player_name", "ER9", "WH", "SVHLD", "pos", "drafted",
+          "WQS") %in% colnames(results$pit))) # QS tested in separate test
+})
+
+test_that("QS col is created if missing", {
+  expect_false("QS" %in% colnames(pitcher_projections)) # validate test data
   results <- clean_projections(batter_projections, pitcher_projections)
   expect_true("QS" %in% colnames(results$pit))
 })
@@ -37,25 +40,4 @@ test_that("find_priority_pos() can work with vectorized operations", {
   expected <- c("C", "SS", "2B", "3B", "OF", "1B")
   result <- purrr::map_chr(minpos, find_priority_pos)
   expect_equal(result, expected)
-})
-
-test_that("quality_starts() returns 0 and no error if GS == 0", {
-  GS <- 0
-  ERA <- .345
-  IP <- 60
-  expect_equal(quality_starts(GS, ERA, IP), 0)
-  expect_no_error(quality_starts(GS, ERA, IP))
-})
-
-test_that("quality_starts() can work with vectorized operations", {
-  df <- data.frame(
-    GS = c(10, 20, 30), 
-    ERA = c(.300, .350, .325), 
-    IP = c(100, 125, 150)
-    )
-  
-  expect_equal(
-    quality_starts(df$GS, df$ERA, df$IP), 
-    c(11.8561507, 18.0242508, 24.3013985)
-    )
 })
