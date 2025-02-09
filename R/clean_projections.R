@@ -34,7 +34,7 @@ clean_projections <- function(bat, pit) {
     dplyr::filter(minpos != "P") |>
     dplyr::mutate(
       OB = H + BB + HBP, # needed for weighting OBP
-      pos = purrr::map_chr(minpos, find_priority_pos),
+      pos = unlist(lapply(minpos, find_priority_pos)),
       drafted = FALSE # needed for calculating z-score
     )
   
