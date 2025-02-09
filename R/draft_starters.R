@@ -91,6 +91,6 @@ find_top_avail <- function(df, slot) {
 #' @return The data frame with top available players marked as drafted = TRUE.
 #' @noRd
 mark_drafted_players <- function(df, ids) {
-  df$drafted <- ifelse(df$fangraphs_id %in% top_avail, T, df$drafted)
+  df$drafted <- ifelse(df$fangraphs_id %in% ids, T, df$drafted)
   return(df)
 }
