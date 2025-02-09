@@ -13,10 +13,8 @@
 #' @return The zscores data frame with updated drafted column.
 #' @noRd
 draft_starters <- function(zscores, n_drafted_by_pos) {
-  # reset drafted column before each iteration
-  zscores <- zscores |>
-    dplyr::mutate(drafted = FALSE) |>
-    dplyr::arrange(dplyr::desc(zSUM))
+  zscores$drafted <- FALSE # needs to be reset before each iteration
+  zscores <- zscores[order(-zscores$zSUM), ] # ensure df is sorted properly
   
   if ("PA" %in% names(zscores)) {
     stopifnot(
