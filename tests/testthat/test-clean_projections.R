@@ -15,7 +15,13 @@ test_that("cleaned pitcher projections include needed columns", {
 test_that("QS col is created if missing", {
   expect_false("QS" %in% colnames(pitcher_projections)) # validate test data
   results <- clean_projections(batter_projections, pitcher_projections)
+  GS <- results$pit$GS
+  ERA <- results$pit$ERA
+  IP <- results$pit$IP
+  QS <- quality_starts(GS, ERA, IP)
+  
   expect_true("QS" %in% colnames(results$pit))
+  expect_equal(results$pit$QS, QS)
 })
 
 test_that("position priority is correct", {
