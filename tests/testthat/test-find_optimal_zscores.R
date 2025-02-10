@@ -6,8 +6,8 @@ test_that("i is greater than 2", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
-  results <- clean_projections(batter_projections, pitcher_projections) |>
+  test_data <- projection_test_data()
+  results <- clean_projections(test_data$bat, test_data$pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 25, test = TRUE)
   expect_true(length(results) > 2)
 })
@@ -20,8 +20,8 @@ test_that("iteration doesn't modify nrow, ncol, or colnames", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
-  results <- clean_projections(batter_projections, pitcher_projections) |>
+  test_data <- projection_test_data()
+  results <- clean_projections(test_data$bat, test_data$pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 2, test = TRUE)
   i1 <- results[[1]]
   i2 <- results[[2]]
@@ -42,8 +42,8 @@ test_that("iteration stops when ranks are equal", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
-  results <- clean_projections(batter_projections, pitcher_projections) |>
+  test_data <- projection_test_data()
+  results <- clean_projections(test_data$bat, test_data$pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 25, test = TRUE)
   
   i_final <- length(results)
@@ -73,8 +73,8 @@ test_that("returns expected object", {
               "MI" = 1, "OF" = 5, "UT" = 1)
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
-  
-  results <- clean_projections(batter_projections, pitcher_projections) |>
+  test_data <- projection_test_data()
+  results <- clean_projections(test_data$bat, test_data$pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
   
   expect_true(length(results) == 2)
