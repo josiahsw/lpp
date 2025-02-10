@@ -18,7 +18,7 @@ calc_zscores <- function(weighted_df, categories) {
   dp_sd <- draftpool_summary(weighted_df, stats::sd)
   
   if ("PA" %in% names(weighted_df)) {
-    zscore_projection <- weighted_df |>
+    zscore_df <- weighted_df |>
       dplyr::mutate(
         zHR = z_score(HR, dp_mean["HR"], dp_sd["HR"]),
         zR = z_score(R, dp_mean["R"], dp_sd["R"]),
@@ -28,7 +28,7 @@ calc_zscores <- function(weighted_df, categories) {
         zOBP = z_score(wOBP, dp_mean["wOBP"], dp_sd["wOBP"])
       )
   } else {
-    zscore_projection <- weighted_df |>
+    zscore_df <- weighted_df |>
       dplyr::mutate(
         zW = z_score(W, dp_mean["W"], dp_sd["W"]),
         zQS = z_score(QS, dp_mean["QS"], dp_sd["QS"]),
@@ -41,9 +41,10 @@ calc_zscores <- function(weighted_df, categories) {
         zWHIP = z_score(wWHIP, dp_mean["wWHIP"], dp_sd["wWHIP"])
       )
   }
+  
   # sum z-scores for selected categories -- base R 100x faster than dplyr
-  zscore_projection$zSUM <- rowSums(as.matrix(zscore_projection[selected_cols]))
-  return(zscore_projection)
+  zscore_df$zSUM <- rowSums(as.matrix(zscore_df[selected_cols]))
+  return(zscore_df)
 }
 
 # helpers -----------------------------------------------------------------
