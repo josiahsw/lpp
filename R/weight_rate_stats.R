@@ -5,30 +5,30 @@
 #' Closely follows the method outlined in this article:
 #' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/.
 #'
-#' @param cleaned_projection A data frame of cleaned batter or pitcher 
+#' @param cleaned_df A data frame of cleaned batter or pitcher 
 #'                           projections from clean_projections().
 #' @param n_drafted An integer, the number of batters or pitchers drafted. 
 #'
 #' @return The cleaned projection data frame with weighted rate stat variables 
 #'         added.
 #' @noRd
-weight_rate_stats <- function(cleaned_projection, n_drafted) {
+weight_rate_stats <- function(cleaned_df, n_drafted) {
   # for the first iteration where no players are marked as drafted yet.
   # this will be adjusted for in later iterations.
-  if (sum(cleaned_projection$drafted) == 0) {
-    cleaned_projection$drafted[1:n_drafted] <- TRUE
+  if (sum(cleaned_df$drafted) == 0) {
+    cleaned_df$drafted[1:n_drafted] <- TRUE
   }
   
-  dp_mean <- draftpool_summary(cleaned_projection, mean)
+  dp_mean <- draftpool_summary(cleaned_df, mean)
   
-  if ("PA" %in% names(cleaned_projection)) {
-    weighted_projection <- cleaned_projection |>
+  if ("PA" %in% names(cleaned_df)) {
+    weighted_projection <- cleaned_df |>
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
         wOBP = x_above_avg(OB, PA, dp_mean["OBP"]) # converts to on-base above avg
       )
   } else {
-    weighted_projection <- cleaned_projection |>
+    weighted_projection <- cleaned_df |>
       dplyr::mutate(
         wERA = -x_above_avg(ER9, IP, dp_mean["ERA"]), # runs prevented above avg
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
