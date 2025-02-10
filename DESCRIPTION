@@ -21,5 +21,4 @@ Depends:
 LazyData: true
 Imports: 
     dplyr,
-    magrittr,
-    purrr
+    magrittr
