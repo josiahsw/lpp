@@ -22,19 +22,20 @@ weight_rate_stats <- function(cleaned_df, n_drafted) {
   dp_mean <- draftpool_summary(cleaned_df, mean)
   
   if ("PA" %in% names(cleaned_df)) {
-    weighted_projection <- cleaned_df |>
+    weighted_df <- cleaned_df |>
       dplyr::mutate(
         wAVG = x_above_avg(H, AB, dp_mean["AVG"]), # converts to hits above avg
         wOBP = x_above_avg(OB, PA, dp_mean["OBP"]) # converts to on-base above avg
       )
   } else {
-    weighted_projection <- cleaned_df |>
+    weighted_df <- cleaned_df |>
       dplyr::mutate(
         wERA = -x_above_avg(ER9, IP, dp_mean["ERA"]), # runs prevented above avg
         wWHIP = -x_above_avg(WH, IP, dp_mean["WHIP"]) # walks + hits prevented above avg
       )
   }
-  return(weighted_projection)
+  
+  return(weighted_df)
 }
 
 # helpers -----------------------------------------------------------------
