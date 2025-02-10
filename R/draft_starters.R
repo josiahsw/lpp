@@ -14,7 +14,7 @@
 #' @noRd
 draft_starters <- function(zscore_df, n_drafted_by_pos) {
   zscore_df$drafted <- FALSE # needs to be reset before each iteration
-  zscore_df <- zscore_df[order(-zscores$zSUM), ] # ensure df is sorted properly
+  zscore_df <- zscore_df[order(-zscore_df$zSUM), ] # ensure df is sorted properly
   
   if ("PA" %in% names(zscore_df)) {
     stopifnot(
