@@ -5,20 +5,20 @@
 #' specific categories. Closely follows the method outlined in this article:
 #' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/. 
 #'
-#' @param weighted_projection  A data frame of weighted batter or pitcher 
-#'                             projections from weight_rate_stats().
+#' @param weighted_df  A data frame of weighted batter or pitcher projections 
+#'                     from weight_rate_stats().
 #' @param categories A vector of batter or pitcher categories. Either 
 #'                   "bat_cat" or "pit_cat".
 #'
-#' @return The weighted projections data frame with z-score variables added.
+#' @return The weighted data frame with z-score variables added.
 #' @noRd
-calc_zscores <- function(weighted_projection, categories) {
+calc_zscores <- function(weighted_df, categories) {
   selected_cols <- paste0("z", categories)
-  dp_mean <- draftpool_summary(weighted_projection, mean)
-  dp_sd <- draftpool_summary(weighted_projection, stats::sd)
+  dp_mean <- draftpool_summary(weighted_df, mean)
+  dp_sd <- draftpool_summary(weighted_df, stats::sd)
   
-  if ("PA" %in% names(weighted_projection)) {
-    zscore_projection <- weighted_projection |>
+  if ("PA" %in% names(weighted_df)) {
+    zscore_projection <- weighted_df |>
       dplyr::mutate(
         zHR = z_score(HR, dp_mean["HR"], dp_sd["HR"]),
         zR = z_score(R, dp_mean["R"], dp_sd["R"]),
@@ -28,7 +28,7 @@ calc_zscores <- function(weighted_projection, categories) {
         zOBP = z_score(wOBP, dp_mean["wOBP"], dp_sd["wOBP"])
       )
   } else {
-    zscore_projection <- weighted_projection |>
+    zscore_projection <- weighted_df |>
       dplyr::mutate(
         zW = z_score(W, dp_mean["W"], dp_sd["W"]),
         zQS = z_score(QS, dp_mean["QS"], dp_sd["QS"]),
