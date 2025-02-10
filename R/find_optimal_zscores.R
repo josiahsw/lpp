@@ -34,8 +34,8 @@ find_optimal_zscores <- function(cleaned_projections, bat_pos, pit_pos, bench,
   i <- 0
   prior_rank <- NULL
   current_rank <-
-    c(utils::head(cleaned_projections$bat$fangraphs_id, n_drafted$bat,
-      utils::head(cleaned_projections$pit$fangraphs_id, n_drafted$pit)))
+    c(utils::head(bat$fangraphs_id, n_drafted$bat,
+      utils::head(pit$fangraphs_id, n_drafted$pit)))
   max_iterations <- max_i
   test_list <- list()  # only used for testing
   
