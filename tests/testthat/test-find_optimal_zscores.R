@@ -7,12 +7,12 @@ test_that("i is greater than 2", {
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
   
-  results <- clean_projections(batter_projections, pitcher_projections) %>%
+  results <- clean_projections(batter_projections, pitcher_projections) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 25, test = TRUE)
   expect_true(length(results) > 2)
 })
 
-test_that("iteration doesn't modify rows, columns, or colnames", {
+test_that("iteration doesn't modify nrow, ncol, or colnames", {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
@@ -21,7 +21,7 @@ test_that("iteration doesn't modify rows, columns, or colnames", {
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
   
-  results <- clean_projections(batter_projections, pitcher_projections) %>%
+  results <- clean_projections(batter_projections, pitcher_projections) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 2, test = TRUE)
   i1 <- results[[1]]
   i2 <- results[[2]]
@@ -43,7 +43,7 @@ test_that("iteration stops when ranks are equal", {
   pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
   bench = 2 
   
-  results <- clean_projections(batter_projections, pitcher_projections) %>%
+  results <- clean_projections(batter_projections, pitcher_projections) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat, max_i = 25, test = TRUE)
   
   i_final <- length(results)
@@ -63,4 +63,21 @@ test_that("iteration stops when ranks are equal", {
                 identical(i_final_pit_ranks, i_minus_one_pit_ranks))
   expect_false(identical(i_minus_one_bat_ranks, i_minus_two_bat_ranks) & 
                  identical(i_minus_one_pit_ranks, i_minus_two_pit_ranks))
+})
+
+test_that("returns expected object", {
+  teams <- 12
+  bat_cat = c("HR", "R", "RBI", "SB", "OBP")
+  pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
+  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
+              "MI" = 1, "OF" = 5, "UT" = 1)
+  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
+  bench = 2 
+  
+  results <- clean_projections(batter_projections, pitcher_projections) |>
+    find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
+  
+  expect_true(length(results) == 2)
+  expect_true(all(c("bat", "pit") %in% names(results)))
+  expect_true(all(sapply(results, is.data.frame)))
 })
