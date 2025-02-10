@@ -5,26 +5,26 @@
 #' etc.), then marks the next available MI and CI, then fills the remaining top 
 #' players available at UT.
 #'
-#' @param zscores A data frame of z-scored batter or pitcher projections. The 
-#'                output from calc_zscores().
+#' @param zscore_df A data frame of z-scored batter or pitcher projections. The 
+#'                  output from calc_zscores().
 #' @param n_drafted_by_pos A named vector, the number of batters or pitchers 
 #'                         drafted at each position. 
 #' 
-#' @return The zscores data frame with updated drafted column.
+#' @return The zscore data frame with updated drafted column.
 #' @noRd
-draft_starters <- function(zscores, n_drafted_by_pos) {
-  zscores$drafted <- FALSE # needs to be reset before each iteration
-  zscores <- zscores[order(-zscores$zSUM), ] # ensure df is sorted properly
+draft_starters <- function(zscore_df, n_drafted_by_pos) {
+  zscore_df$drafted <- FALSE # needs to be reset before each iteration
+  zscore_df <- zscore_df[order(-zscores$zSUM), ] # ensure df is sorted properly
   
-  if ("PA" %in% names(zscores)) {
+  if ("PA" %in% names(zscore_df)) {
     stopifnot(
       all(c("C", "1B", "2B", "3B", "SS", "OF", "MI", "CI", "UT") %in% 
             names(n_drafted_by_pos)))
     
     main <- n_drafted_by_pos[c("C", "1B", "2B", "3B", "SS", "OF")]
-    ids <- sapply(names(main), function(slot) find_top_avail(zscores, main[slot]))
+    ids <- sapply(names(main), function(slot) find_top_avail(zscore_df, main[slot]))
     ids <- unlist(ids)
-    results <- mark_drafted_players(zscores, ids)
+    results <- mark_drafted_players(zscore_df, ids)
     
     multi <- n_drafted_by_pos[c("CI", "MI")]
     ids <- sapply(names(multi), function(slot) find_top_avail(results, multi[slot]))
@@ -37,9 +37,9 @@ draft_starters <- function(zscores, n_drafted_by_pos) {
     stopifnot(all(c("SP", "RP", "P") %in% names(n_drafted_by_pos)))
     
     main <- n_drafted_by_pos[c("SP", "RP")]
-    ids <- sapply(names(main), function(slot) find_top_avail(zscores, main[slot]))
+    ids <- sapply(names(main), function(slot) find_top_avail(zscore_df, main[slot]))
     ids <- unlist(ids)
-    results <- mark_drafted_players(zscores, ids)
+    results <- mark_drafted_players(zscore_df, ids)
     
     ids <- find_top_avail(results, n_drafted_by_pos["P"])
     results <- mark_drafted_players(results, ids)
