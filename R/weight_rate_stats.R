@@ -5,8 +5,8 @@
 #' Closely follows the method outlined in this article:
 #' https://web.archive.org/web/20120725032003/http://www.lastplayerpicked.com/how-the-price-guide-works-part-i-standard-scores/.
 #'
-#' @param cleaned_df A data frame of cleaned batter or pitcher 
-#'                           projections from clean_projections().
+#' @param cleaned_df A data frame of cleaned batter or pitcher projections from 
+#'                   clean_projections().
 #' @param n_drafted An integer, the number of batters or pitchers drafted. 
 #'
 #' @return The cleaned projection data frame with weighted rate stat variables 
