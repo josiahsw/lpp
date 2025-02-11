@@ -22,9 +22,6 @@
 #' @returns A list of length 2 containing a data frame of batter and pitcher 
 #'          auction values.
 #' @export
-#' @examples
-#' lpp(batter_projections, pitcher_projections)
-#' 
 lpp <- function(
     bat = NULL, 
     pit = NULL, 
