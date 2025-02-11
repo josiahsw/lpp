@@ -18,7 +18,8 @@ projection_test_data <- function() {
 #' @returns A data frame of batter z-scores
 #' @noRd
 batter_zscore_test_data <- function() {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   
   bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
               "MI" = 1, "OF" = 5, "UT" = 1)
@@ -39,7 +40,8 @@ batter_zscore_test_data <- function() {
 #' @returns A data frame of pitcher z-scores
 #' @noRd
 pitcher_zscore_test_data <- function() {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   
   bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
               "MI" = 1, "OF" = 5, "UT" = 1)
@@ -86,7 +88,8 @@ zscore_test_data <- function() {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
+  test_data <- projection_test_data()
   
-  clean_projections(batter_projections, pitcher_projections) |>
+  clean_projections(test_data$bat, test_data$pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat)
 }
