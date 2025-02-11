@@ -1,5 +1,6 @@
 test_that("batter zSUM is accurate", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   categories <- c("HR", "R", "RBI", "SB", "AVG", "OBP")
   bat_cat <- sample(categories, 5, replace = FALSE) # random selection for test
   z_cols <- paste0("z", bat_cat)
@@ -17,7 +18,8 @@ test_that("batter zSUM is accurate", {
 })
 
 test_that("pitcher zSUM is accurate", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   categories <- c("WQS", "SVHLD", "SO", "ERA", "WHIP", "W")
   pit_cat <- sample(categories, 5, replace = FALSE) # random selection for test
   z_cols <- paste0("z", pit_cat)
@@ -35,7 +37,8 @@ test_that("pitcher zSUM is accurate", {
 })
 
 test_that("expected batter columns are created", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   n_drafted <- 100
   bat_cat <- c("HR", "R", "RBI", "SB", "OBP")
   z_cols <- c("zHR", "zR", "zRBI", "zSB", "zAVG", "zOBP", "zSUM")
@@ -46,7 +49,8 @@ test_that("expected batter columns are created", {
 })
 
 test_that("expected pitcher columns are created", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   n_drafted <- 100
   pit_cat <- c("WQS", "SVHLD", "SO", "ERA", "WHIP")
   z_cols <- c("zW", "zQS", "zWQS", "zSV", "zHLD", "zSVHLD", "zSO", "zERA", 
