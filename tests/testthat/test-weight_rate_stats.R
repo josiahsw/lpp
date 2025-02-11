@@ -1,5 +1,6 @@
 test_that("drafted values are assigned if missing", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   expect_true(!all(cleaned$bat$drafted))
   expect_true(!all(cleaned$pit$drafted))
   
@@ -10,7 +11,8 @@ test_that("drafted values are assigned if missing", {
 })
 
 test_that("drafted values are not assigned if they exist", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   cleaned$bat$drafted[1] <- TRUE
   cleaned$pit$drafted[1] <- TRUE
   expect_equal(sum(cleaned$bat$drafted), 1)
@@ -23,7 +25,8 @@ test_that("drafted values are not assigned if they exist", {
 })
 
 test_that("expected columns are created", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   expect_false(all(c("wAVG", "wOBP") %in% names(cleaned$bat)))
   expect_false(all(c("wERA", "wWHIP") %in% names(cleaned$pit)))
   
@@ -34,7 +37,8 @@ test_that("expected columns are created", {
 })
 
 test_that("batter stats are calculated correctly", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   bat <- cleaned$bat
   n_drafted <- 150
   bat$drafted[1:n_drafted] <- TRUE
@@ -48,7 +52,8 @@ test_that("batter stats are calculated correctly", {
 })
 
 test_that("pitcher stats are calculated correctly", {
-  cleaned <- clean_projections(batter_projections, pitcher_projections)
+  test_data <- projection_test_data()
+  cleaned <- clean_projections(test_data$bat, test_data$pit)
   pit <- cleaned$pit
   n_drafted <- 150
   pit$drafted[1:n_drafted] <- TRUE
