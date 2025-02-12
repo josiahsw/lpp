@@ -60,7 +60,3 @@ auction values.
 \description{
 Run Last Player Picked
 }
-\examples{
-lpp(batter_projections, pitcher_projections)
-
-}
