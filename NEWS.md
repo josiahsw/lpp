@@ -1,3 +1,3 @@
-# lpp 0.1.0
+# lpp 0.0.0.9001
 
-* Initial CRAN submission.
+* Added position adjustment method options.
