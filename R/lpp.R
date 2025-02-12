@@ -39,6 +39,27 @@ lpp <- function(
     pos_adj = "hold_harmless"
     ) {
   
+  stopifnot(
+    !is.null(bat),
+    !is.null(pit),
+    !is.null(lg), lg %in% c("MLB", "AL", "NL"),
+    !is.null(teams), teams > 0, teams %% 1 == 0, # a whole number
+    !is.null(budget), budget > 0,
+    !is.null(min_bid), min_bid >= 0,
+    !is.null(bat_cat),
+    all(bat_cat %in% c("HR", "R", "RBI", "SB", "AVG", "OBP")),
+    !is.null(pit_cat),
+    all(pit_cat %in% c("W", "QS", "WQS", "SV", "HLD", "SVHLD", "SO", "ERA", "WHIP")),
+    !is.null(bat_pos), all(bat_pos >= 0),
+    setequal(names(bat_pos), c("C", "1B", "2B", "3B", "SS", "CI", "MI", "OF", "UT")),
+    !is.null(pit_pos), all(pit_pos >= 0),
+    setequal(names(pit_pos), c("SP", "RP", "P")),
+    !is.null(bench), bench >= 0,
+    !is.null(pos_adj),
+    pos_adj %in% c("simple", "hold_harmless", "zero_out", "DH_to_1B", "bat_pit",
+                   "none")
+  )
+  
   clean_projections(bat, pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) |>
     position_adjustment(pos_adj)
