@@ -62,5 +62,6 @@ lpp <- function(
   
   clean_projections(bat, pit) |>
     find_optimal_zscores(bat_pos, pit_pos, bench, teams, bat_cat, pit_cat) |>
-    position_adjustment(pos_adj)
+    position_adjustment(pos_adj) |>
+    dollar_values(bat_pos, pit_pos, bench, teams, budget, min_bid)
 }
