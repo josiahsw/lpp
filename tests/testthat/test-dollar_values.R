@@ -56,15 +56,15 @@ test_that("assign_dollar_values() calculates correctly", {
 test_that("cleaned results return correct columns", {
   adjusted <- suppressMessages(adjusted_test_data()) 
   bat <- adjusted$bat
-  val <- aSUM_above_0(adjusted)
-  tmd <- 2832
   cols <- names(bat)
   zcols <- c(cols[grepl("^z", cols)])
   dzcols <- paste0("d", zcols)
   final_cols <- c(change_dz_prefix(dzcols), "aPOS", "Dollars")
-  test <- assign_dollar_values(bat, total_value = val, 
-                               total_marginal_dollars = tmd)
-  test <- clean_results(test)
+  bat_pos = c("C" = 1, "1B" = 1, "2B" = 1, "3B" = 1, "SS" = 1, "CI" = 1, 
+              "MI" = 1, "OF" = 5, "UT" = 1)
+  pit_pos = c("SP" = 6, "RP" = 3, "P" = 0)
+  test <- dollar_values(adjusted, bat_pos, pit_pos, bench = 2, teams = 12, 
+                        budget = 260, min_bid = 1)
   
-  expect_true(all(final_cols %in% names(test)))
+  expect_true(all(final_cols %in% names(test$bat)))
 })

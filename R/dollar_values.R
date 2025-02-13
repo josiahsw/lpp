@@ -17,8 +17,10 @@ dollar_values <- function(adjusted_dfs, bat_pos, pit_pos, bench, teams, budget,
   val <- aSUM_above_0(adjusted_dfs)
   tmd <- teams * (budget - (slots_per_team * min_bid))
   
-  lapply(adjusted_dfs, assign_dollar_values, 
+  results <- lapply(adjusted_dfs, assign_dollar_values, 
          total_value = val, total_marginal_dollars = tmd)
+  
+  lapply(results, clean_results)
 }
 
 # helpers ----------------------------------------------------------------------
