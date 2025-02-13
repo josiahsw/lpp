@@ -26,7 +26,7 @@ lpp <- function(
     bat = NULL, 
     pit = NULL, 
     keepers = NULL, 
-    lg = "MLB", 
+    lg = c("MLB", "AL", "NL"),
     teams = 12, 
     budget = 260, 
     min_bid = 1, 
@@ -36,13 +36,16 @@ lpp <- function(
                 "MI" = 1, "OF" = 5, "UT" = 1),
     pit_pos = c("SP" = 6, "RP" = 3, "P" = 0), 
     bench = 2, 
-    pos_adj = "hold_harmless"
+    pos_adj = c("hold_harmless", "zero_out", "DH_to_1B","simple", "bat_pit",
+                "none")
     ) {
+  
+  lg <- match.arg(lg)
+  pos_adj <- match.arg(pos_adj)
   
   stopifnot(
     !is.null(bat),
     !is.null(pit),
-    !is.null(lg), lg %in% c("MLB", "AL", "NL"),
     !is.null(teams), teams > 0, teams %% 1 == 0, # a whole number
     !is.null(budget), budget > 0,
     !is.null(min_bid), min_bid >= 0,
@@ -54,10 +57,7 @@ lpp <- function(
     setequal(names(bat_pos), c("C", "1B", "2B", "3B", "SS", "CI", "MI", "OF", "UT")),
     !is.null(pit_pos), all(pit_pos >= 0),
     setequal(names(pit_pos), c("SP", "RP", "P")),
-    !is.null(bench), bench >= 0,
-    !is.null(pos_adj),
-    pos_adj %in% c("simple", "hold_harmless", "zero_out", "DH_to_1B", "bat_pit",
-                   "none")
+    !is.null(bench), bench >= 0
   )
   
   clean_projections(bat, pit) |>

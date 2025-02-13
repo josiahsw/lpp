@@ -8,9 +8,9 @@ test_that("error is thrown if pit is null", {
   expect_error(lpp(bat = test_data$bat), class = "simpleError")
 })
 
-test_that("error is thrown if lg is null", {
+test_that("no error is thrown if lg is null", {
   test_data <- projection_test_data()
-  expect_error(lpp(bat = test_data$bat, pit = test_data$pit, lg = NULL), 
+  expect_no_error(lpp(bat = test_data$bat, pit = test_data$pit, lg = NULL), 
                class = "simpleError")
 })
 
@@ -167,9 +167,9 @@ test_that("error is thrown if bench is not >= 0", {
   )
 })
 
-test_that("error is thrown if pos_adj is null", {
+test_that("no error is thrown if pos_adj is null", {
   test_data <- projection_test_data()
-  expect_error(lpp(bat = test_data$bat, pit = test_data$pit, pos_adj = NULL), 
+  expect_no_error(lpp(bat = test_data$bat, pit = test_data$pit, pos_adj = NULL), 
                class = "simpleError")
 })
 
