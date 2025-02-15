@@ -107,7 +107,7 @@ adjusted_test_data <- function() {
   teams <- 12
   bat_cat = c("HR", "R", "RBI", "SB", "OBP")
   pit_cat = c("WQS", "SVHLD", "SO", "ERA", "WHIP")
-  pos_adj = "hold_harmless"
+  pos_adj = "simple"
   test_data <- projection_test_data()
   
   clean_projections(test_data$bat, test_data$pit) |>

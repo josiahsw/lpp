@@ -18,15 +18,15 @@ position_adjustment <- function (optimal_zscores, pos_adj) {
     all(names(optimal_zscores) %in% c("bat", "pit"))
     )
   
-  if (pos_adj == "none") {
+  if (pos_adj == "simple") {
+    adjusted_zscores <- lapply(optimal_zscores, adj_simple)
+  } else if (pos_adj == "none") {
     n_drafted <- lapply(optimal_zscores, find_n_drafted)
     n_drafted <- sum(unlist(n_drafted))
     zlpp <- combined_lpp_zscore(optimal_zscores, n_drafted)
     adjusted_zscores <- lapply(optimal_zscores, add_pos_adj, zlpp = zlpp)
-  } else if (pos_adj == "bat_pit") {
+  } else if (pos_adj == "bat_pit"){
     adjusted_zscores <- lapply(optimal_zscores, adj_bat_pit)
-  } else {
-    adjusted_zscores <- lapply(optimal_zscores, adj_simple, pos_adj = pos_adj)
   }
   
   return(adjusted_zscores)
@@ -94,36 +94,16 @@ adj_bat_pit <- function(df) {
 #'
 #' @returns The data frame with specified adjustment applied.
 #' @noRd
-adj_simple <- function(df, pos_adj) {
-  pos_adj_summary <- simple_pos_adj_summary(df)
+adj_simple <- function(df) {
+  summary <- simple_pos_adj_summary(df)
   
-  positive_positions <- pos_adj_summary$pos[pos_adj_summary$aPOS > 0]
-  
-  if (length(positive_positions) > 0) {
-    message_text <- paste("Position(s) with positive aPOS values:", 
-                          paste(positive_positions, collapse = ", "), "|", 
-                          pos_adj, 
-                          "position adjustment method applied")
-    message(message_text)
+  if ("PA" %in% names(df)) {
+    aPOS_1B <- summary$aPOS[summary$pos == "1B"]
+    summary$aPOS[summary$pos == "DH"] <- aPOS_1B
   }
   
-  # apply position adjustment method
-  pos_adj_summary <- pos_adj_summary |>
-    dplyr::mutate(
-      aPOS = dplyr::case_when(
-        pos_adj == "hold_harmless" & aPOS > 0 ~ max(aPOS[aPOS < 0], na.rm = TRUE),
-        pos_adj == "zero_out" & aPOS > 0 ~ 0,
-        pos_adj == "DH_to_1B" & pos == "DH" ~ {
-          aPOS_1B <- aPOS[pos == "1B"]
-          if(length(aPOS_1B) > 0) aPOS_1B else aPOS  # needed so function can still apply to pitching df
-        },
-        pos_adj == "simple" ~ aPOS,
-        TRUE ~ aPOS  # default case
-      )
-    )
-  
   df |>
-    dplyr::left_join(pos_adj_summary, by = "pos") |>
+    dplyr::left_join(summary, by = "pos") |>
     dplyr::mutate(aSUM = zSUM - aPOS) |>
     dplyr::arrange(dplyr::desc(aSUM))
 }

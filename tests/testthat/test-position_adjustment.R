@@ -1,7 +1,6 @@
 test_that("object returned with expected structure", {
-  z <- zscore_test_data()
-  pos_adj <- c("none", "bat_pit", "simple", "hold_harmless", "zero_out", 
-               "DH_to_1B")
+  z <- suppressMessages(zscore_test_data())
+  pos_adj <- c("none", "bat_pit", "simple")
   results <- lapply(pos_adj, position_adjustment, optimal_zscores = z)
 
   # all elements are length 2
@@ -14,9 +13,8 @@ test_that("object returned with expected structure", {
 })
 
 test_that("expected columns are created", {
-  z <- zscore_test_data()
-  pos_adj <- c("none", "bat_pit", "simple", "hold_harmless", "zero_out", 
-               "DH_to_1B")
+  z <- suppressMessages(zscore_test_data())
+  pos_adj <- c("none", "bat_pit", "simple")
   results <- lapply(pos_adj, position_adjustment, optimal_zscores = z)
   
   expected_columns <- function(df) {
@@ -39,9 +37,8 @@ test_that("expected columns are created", {
 })
 
 test_that("aSUM is correctly calculated", {
-  z <- zscore_test_data()
-  pos_adj <- c("none", "bat_pit", "simple", "hold_harmless", "zero_out", 
-               "DH_to_1B")
+  z <- suppressMessages(zscore_test_data())
+  pos_adj <- c("none", "bat_pit", "simple")
   results <- lapply(pos_adj, position_adjustment, optimal_zscores = z)
   
   aSUM_is_correct <- function(df) {
@@ -57,9 +54,8 @@ test_that("aSUM is correctly calculated", {
 })
 
 test_that("players marked drafted == players with aSUM > 0", {
-  z <- zscore_test_data()
-  pos_adj <- c("none", "bat_pit", "simple", "hold_harmless", "zero_out", 
-               "DH_to_1B")
+  z <- suppressMessages(zscore_test_data())
+  pos_adj <- c("none", "bat_pit", "simple")
   results <- lapply(pos_adj, position_adjustment, optimal_zscores = z)
   
   sum_n_drafted <- function(l) {
@@ -78,7 +74,7 @@ test_that("players marked drafted == players with aSUM > 0", {
 })
 
 test_that("pos_adj == none applies same adj to batters and pitchers", {
-  result <- zscore_test_data() |>
+  result <- suppressMessages(zscore_test_data()) |>
     position_adjustment(pos_adj = "none")
   
   # all batter and pitcher position adjustments are the same
@@ -86,7 +82,7 @@ test_that("pos_adj == none applies same adj to batters and pitchers", {
 })
 
 test_that("bat_pit adj is correct", {
-  result <- zscore_test_data() |>
+  result <- suppressMessages(zscore_test_data()) |>
     position_adjustment(pos_adj = "bat_pit")
   
   # all batters receive same adj, all pitchers receive the same adj
@@ -106,12 +102,12 @@ test_that("bat_pit adj is correct", {
   )
 })
 
-test_that("simple adj is correct", {
-  z <- zscore_test_data()
+test_that("simple adj is correct for all positions other than DH", {
+  z <- suppressMessages(zscore_test_data())
   summary <- lapply(z, simple_pos_adj_summary)
-  result <- zscore_test_data() |>
+  result <- suppressMessages(zscore_test_data()) |>
     position_adjustment(pos_adj = "simple")
-  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF", "DH")
+  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF")
   pit_pos <- c("SP", "RP")
   
   # all individual positions receive the adjustment from the control summary
@@ -125,94 +121,17 @@ test_that("simple adj is correct", {
   })
   expect_true(all(bat_adj))
   expect_true(all(pit_adj))
-  
-  # positive positions are left alone
-  expect_true(sum(summary$bat$aPOS > 0) > 0)
-  expect_true(sum(result$bat$aPOS > 0) > 0)
 })
 
-test_that("hold_harmless adj is correct", {
-  z <- zscore_test_data()
-  summary <- lapply(z, simple_pos_adj_summary)
-  result <- zscore_test_data() |>
-    position_adjustment(pos_adj = "hold_harmless")
-  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF", "DH")
-  pit_pos <- c("SP", "RP")
+test_that("simple adj replaces DH aPOS with 1B", {
+  z <- suppressMessages(zscore_test_data())
+  summary <- simple_pos_adj_summary(z$bat)
   
-  positive_positions <- summary$bat$pos[summary$bat$aPOS > 0]
-  hh_adj <- max(summary$bat$aPOS[summary$bat$aPOS < 0], na.rm = TRUE)
+  if ("PA" %in% names(z$bat)) {
+    aPOS_1B <- summary$aPOS[summary$pos == "1B"]
+    summary$aPOS[summary$pos == "DH"] <- aPOS_1B
+  }
   
-  # any positive positions receive the hold harmless adjustment
-  expect_true(length(positive_positions) > 0)
-  expect_true(all(result$bat$aPOS[result$bat$pos == positive_positions] == 
-                    hh_adj))
-  
-  # all other positions receive the adjustment from the control summary
-  bat_pos <- bat_pos[!bat_pos %in% positive_positions]
-  bat_adj <- sapply(bat_pos, function (pos) {
-    all(result$bat$aPOS[result$bat$pos == pos] == 
-          summary$bat$aPOS[summary$bat$pos == pos])
-  })
-  pit_pos <- pit_pos[!pit_pos %in% positive_positions]
-  pit_adj <- sapply(pit_pos, function (pos) {
-    all(result$pit$aPOS[result$pit$pos == pos] == 
-          summary$pit$aPOS[summary$pit$pos == pos])
-  })
-  expect_true(all(bat_adj))
-  expect_true(all(pit_adj))
-})
-
-test_that("zero_out adj is correct", {
-  z <- zscore_test_data()
-  summary <- lapply(z, simple_pos_adj_summary)
-  result <- zscore_test_data() |>
-    position_adjustment(pos_adj = "zero_out")
-  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF", "DH")
-  pit_pos <- c("SP", "RP")
-  
-  positive_positions <- summary$bat$pos[summary$bat$aPOS > 0]
-  
-  # any positive positions receive the hold harmless adjustment
-  expect_true(length(positive_positions) > 0)
-  expect_true(all(result$bat$aPOS[result$bat$pos == positive_positions] == 0))
-  
-  # all other positions receive the adjustment from the control summary
-  bat_pos <- bat_pos[!bat_pos %in% positive_positions]
-  bat_adj <- sapply(bat_pos, function (pos) {
-    all(result$bat$aPOS[result$bat$pos == pos] == 
-          summary$bat$aPOS[summary$bat$pos == pos])
-  })
-  pit_pos <- pit_pos[!pit_pos %in% positive_positions]
-  pit_adj <- sapply(pit_pos, function (pos) {
-    all(result$pit$aPOS[result$pit$pos == pos] == 
-          summary$pit$aPOS[summary$pit$pos == pos])
-  })
-  expect_true(all(bat_adj))
-  expect_true(all(pit_adj))
-})
-
-test_that("DH_to_1B adj is correct", {
-  z <- zscore_test_data()
-  summary <- lapply(z, simple_pos_adj_summary)
-  result <- zscore_test_data() |>
-    position_adjustment(pos_adj = "DH_to_1B")
-  bat_pos <- c("C", "1B", "2B", "3B", "SS", "OF", "DH")
-  pit_pos <- c("SP", "RP")
-  
-  # DH adjustment matches 1B adjustment from control summary
-  expect_true(all(result$bat$aPOS[result$bat$pos == "DH"] == 
-                    summary$bat$aPOS[summary$bat$pos == "1B"]))
-  
-  # all other positions receive the adjustment from the control summary
-  bat_pos <- bat_pos[!bat_pos %in% "DH"]
-  bat_adj <- sapply(bat_pos, function (pos) {
-    all(result$bat$aPOS[result$bat$pos == pos] == 
-          summary$bat$aPOS[summary$bat$pos == pos])
-  })
-  pit_adj <- sapply(pit_pos, function (pos) {
-    all(result$pit$aPOS[result$pit$pos == pos] == 
-          summary$pit$aPOS[summary$pit$pos == pos])
-  })
-  expect_true(all(bat_adj))
-  expect_true(all(pit_adj))
+  test <- adj_simple(z$bat)
+  expect_true(all(test$aPOS[test$pos == "DH"] == aPOS_1B))
 })
